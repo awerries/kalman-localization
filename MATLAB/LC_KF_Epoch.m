@@ -42,7 +42,9 @@ function [est_C_b_e_new,est_v_eb_e_new,est_r_eb_e_new,est_IMU_bias_new,...
 
  
 % Copyright 2012, Paul Groves
-% License: BSD; see license.txt for details
+% License: BSD; see GrovesCode/license.txt for details
+%
+% Edits made by Adam Werries where noted as (Werries), Copyright 2015
 
 % Constants (sone of these could be changed to inputs at a later date)
 c = 299792458; % Speed of light in m/s
@@ -94,20 +96,25 @@ H_matrix(4:6,4:6) = -eye(3);
 
 % 6. Set-up measurement noise covariance matrix assuming all components of
 % GNSS position and velocity are independent and have equal variance.
-%% NOW INITIALIZED BEFORE FILTER, ADAPTED
+%% NOW INITIALIZED BEFORE FILTER, ADAPTED AFTER (WERRIES)
+% R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
+% R_matrix(1:3,4:6) = zeros(3);
+% R_matrix(4:6,1:3) = zeros(3);
+% R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
 
 % 7. Calculate Kalman gain using (3.21)
 K_matrix = P_matrix_propagated * H_matrix' / (H_matrix * P_matrix_propagated * H_matrix' + R_matrix);
 
 % 8. Formulate measurement innovations using (14.102), noting that zero
 % lever arm is assumed here
-lab = [0; 0; -1];
-delta_z(1:3,1) = GNSS_r_eb_e - est_r_eb_e_old - est_C_b_e_old*lab;
-delta_z(4:6,1) = GNSS_v_eb_e - est_v_eb_e_old  + Omega_ie*est_C_b_e_old*lab;
+% lab = [0; 0; -1]; % assumed lever arm (Werries)
+delta_z(1:3,1) = GNSS_r_eb_e - est_r_eb_e_old; %- est_C_b_e_old*lab; additional terms from Groves' book
+delta_z(4:6,1) = GNSS_v_eb_e - est_v_eb_e_old ;% + Omega_ie*est_C_b_e_old*lab; additional terms from Groves' book
 
 % 9. Update state estimates using (3.24)
 x_est_new = x_est_propagated + K_matrix * delta_z;
-innovations(:,end+1) = delta_z;
+innovations(:,end+1) = delta_z; % Addition (Werries)
+
 % 10. Update state estimation error covariance matrix using (3.25)
 P_matrix_new = (eye(15) - K_matrix * H_matrix) * P_matrix_propagated;
 
@@ -120,7 +127,8 @@ est_r_eb_e_new = est_r_eb_e_old - x_est_new(7:9);
 
 % Update IMU bias estimates
 est_IMU_bias_new = est_IMU_bias_old + x_est_new(10:15);
-% Run adaptive filter
+
+% Adapt R matrix to sensor noise (Werries)
 k = size(innovations,2);
 if k > n
     C = zeros(6,6);

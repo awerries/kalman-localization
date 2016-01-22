@@ -1,6 +1,7 @@
 function [ A_ ] = inversePD( A )
 %INVERSEPD Computes the inv of a matrix using Cholesky decomposition
 %   A is expected to be positive definite
+
 M = size(A,1);
 [R, b] = chol(A);
 if b~=0

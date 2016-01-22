@@ -2,11 +2,13 @@
 % Adam Werries 2016, see Apache 2.0 license.
 close all; 
 clear all;
-dataset = 'oakland_oct24_meh3';
-applanix = '2015.10.24.19.11.42';
-%% Import Applanix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+addpath('GrovesCode');
+text_files = {'*.txt;*.csv;*.log','Data files (*.txt,*.csv,*.log)'; '*.*', 'All Files (*.*)'};
+%% Import Applanix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ground truth import
-gt = csvread(sprintf('%s/VehicleState.csv',applanix));
+disp('Please select Applanix log file')
+[applanix_file, applanix_path] = uigetfile(text_files, 'Select Applanix Log File');
+gt = csvread([applanix_path applanix_file]);
 gt_t = gt(:,1);
 gt_vel = gt(:,8:10);
 gt_speed = gt(:,21);
@@ -15,14 +17,17 @@ gt_accel = gt(:,14:16);
 gt_xyz = gt(:,27:29);
 figurec;
 plot(gt_xyz(:,2),gt_xyz(:,1));
-title(applanix);
+pathsplit = strsplit(applanix_path, filesep);
+title(sprintf('Applanix data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,applanix_file),'Interpreter','none');
 
-%% Import NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Import NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Format:  1     2                   3               4  5  6  7      8      
 %         time, sol good? (1 or 0), WAAS? (1 or 0), x, y, z, sig_x, sig_y
 %         9      10  11  12  13      14      15      16        17
 %         sig_z, vx, vy, vz, sig_vx, sig_vy, sig_vz, num_sats, sol_sats
-novatel = csvread(sprintf('%s/gps_log_parsed.txt',dataset));
+disp('Please select NovAtel log file')
+[novatel_file, novatel_path] = uigetfile(text_files, 'Select NovAtel Log File', applanix_path);
+novatel = csvread([novatel_path novatel_file]);
 nov_time = novatel(:,1);
 % Convert ECEF to lat-long-altitude
 lla = ecef2lla(novatel(:,4:6));
@@ -31,10 +36,13 @@ lla = ecef2lla(novatel(:,4:6));
 gps_h = -lla(:,3);
 figurec;
 plot(gps_x, gps_y);
-title(strrep(dataset,'_','\_'));
+pathsplit = strsplit(novatel_path, filesep);
+title(sprintf('NovAtel XY data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,novatel_file),'Interpreter','none');
 
-%% Import IMU2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-imu = csvread(sprintf('%s/imu2_log_parsed.txt',dataset));
+%% Import IMU2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+disp('Please select NovAtel log file')
+[imu_file, imu_path] = uigetfile(text_files, 'Select NovAtel Log File', novatel_path);
+imu = csvread([imu_path imu_file]);
 % special correction: the first 48 values in oakland_oct24_meh3 seem to be old serial
 % data recorded all at once.
 imu = imu(49:end,:);
@@ -42,7 +50,8 @@ imu = imu(49:end,:);
 imu(:,2:4) = [-imu(:,3) imu(:,2) -imu(:,4)]/256*9.80665;
 % Convert gyro to rad/s
 imu(:,5:7) = [-imu(:,5) imu(:,6) -imu(:,7)]*0.001214225560616;
-%% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [start_time,Is] = max([min(nov_time),min(gt_t),min(imu(:,1))]);
 [end_time,Ie] = min([max(nov_time),max(gt_t),max(imu(:,1))]);
 end_time = end_time - start_time;
@@ -89,7 +98,7 @@ ground_truth_full(:,6) = interp1(gt_t,gt_rot(:,2),filter_time)';
 ground_truth_full(:,7) = interp1(gt_t,gt_rot(:,3),filter_time)';
 
 
-%% Compare ground truth to raw NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Compare ground truth to raw NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figurec;
 plot(gps_x, gps_y,'r--', 'LineWidth', 2);
 xlabel('Easting (m)');
@@ -121,7 +130,7 @@ ylabel('Northing (m)');
 hold on; plot(nov_time, ground_truth(:,3),'c');
 legend('NovAtel','Applanix','Location','SouthEast');
 
-%% Initialize Error Estimates %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Initialize Error Estimates %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Constants
 deg_to_rad = 0.01745329252;
 rad_to_deg = 1/deg_to_rad;
@@ -165,8 +174,9 @@ RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
 % x y z vx vy vz r p y
 init_cond = [novatel(1,4:6) novatel(1,10:12) ground_truth(1,4:6)+[deg2rad(4.2) deg2rad(77.5) deg2rad(-51.5)]];
 
-%% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, n);
+%% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[out_profile,out_IMU_bias_est,out_KF_SD] = ...
+    Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, n);
 xyz = out_profile(:,2:4);
 llh = ecef2lla(xyz);
 [x,y] = deg2utm(llh(:,1),llh(:,2));
@@ -204,12 +214,12 @@ legend('Filtered','Applanix','Location','SouthEast');
 % ylabel('Height (m)');
 % hold on; plot(imu_time, ground_truth_full(:,3),'c');
 % legend('Filtered','Applanix','Location','SouthEast');
-%% Compute error statistics on groundtruth vs NovAtel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Compute error statistics on groundtruth vs NovAtel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 distance = ((ground_truth(:,1)-gps_x).^2 + (ground_truth(:,2)-gps_y).^2).^0.5;
 fprintf('\nRMS Raw:%f\n',rms(distance))
 fprintf('Max Raw:%f\n',max(distance))
 
-%% Compute error statistics on groundtruth vs filter output %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Compute error statistics on groundtruth vs filter output %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
 fprintf('\nRMS Filter:%f\n',rms(distance))
 fprintf('Max Filter:%f\n',max(distance))

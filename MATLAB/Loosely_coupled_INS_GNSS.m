@@ -9,6 +9,9 @@ function [out_profile,out_IMU_bias_est,out_KF_SD] =...
 %
 % This function created 12/4/2012 by Paul Groves
 %
+% Significant changes made to data-formatting and time-handling by Adam
+% Werries, 2015/2016.
+%
 % Inputs:
 %   LC_KF_config
 %     .init_att_unc           Initial attitude uncertainty per axis (rad)
@@ -103,11 +106,13 @@ out_KF_SD(1,1) = old_time;
 for i =1:15
     out_KF_SD(1,i+1) = sqrt(P_matrix(i,i));
 end % for i
-% Initialize R
+
+% Initialize R (moved from within LC_KF_Epoch.m
 R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
 R_matrix(1:3,4:6) = zeros(3);
 R_matrix(4:6,1:3) = zeros(3);
 R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
+
 % Main loop
 % fprintf('\n\n\n\n\n\n\n\n\n');
 % rewind = '\b\b\b\b\b\b\b\b\b';
