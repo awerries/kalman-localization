@@ -40,6 +40,8 @@ pathsplit = strsplit(novatel_path, filesep);
 title(sprintf('NovAtel XY data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,novatel_file),'Interpreter','none');
 
 %% Import IMU2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Format:  1     2        3        4        5       6       7
+%         time, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
 disp('Please select NovAtel log file')
 [imu_file, imu_path] = uigetfile(text_files, 'Select NovAtel Log File', novatel_path);
 imu = csvread([imu_path imu_file]);
