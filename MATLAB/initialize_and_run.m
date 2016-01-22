@@ -42,8 +42,8 @@ title(sprintf('NovAtel XY data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,novat
 %% Import IMU2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Format:  1     2        3        4        5       6       7
 %         time, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
-disp('Please select NovAtel log file')
-[imu_file, imu_path] = uigetfile(text_files, 'Select NovAtel Log File', novatel_path);
+disp('Please select IMU log file')
+[imu_file, imu_path] = uigetfile(text_files, 'Select IMU Log File', novatel_path);
 imu = csvread([imu_path imu_file]);
 % special correction: the first 48 values in oakland_oct24_meh3 seem to be old serial
 % data recorded all at once.
