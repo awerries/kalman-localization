@@ -1,13 +1,17 @@
 % Code to grab data, parse, adjust timing, run the filters, and plot 
 % Adam Werries 2016, see Apache 2.0 license.
-close all; 
-clear all;
+close all;
 addpath('GrovesCode');
+if ~exist('last_applanix_dir', 'var') || ~ischar(last_applanix_dir) 
+   last_applanix_dir = pwd;
+end
 text_files = {'*.txt;*.csv;*.log','Data files (*.txt,*.csv,*.log)'; '*.*', 'All Files (*.*)'};
 %% Import Applanix %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ground truth import
 disp('Please select Applanix log file')
-[applanix_file, applanix_path] = uigetfile(text_files, 'Select Applanix Log File');
+[applanix_file, applanix_path] = uigetfile(text_files, 'Select Applanix Log File', last_applanix_dir);
+last_applanix_dir = applanix_path;
+
 gt = csvread([applanix_path applanix_file]);
 gt_t = gt(:,1);
 gt_vel = gt(:,8:10);
@@ -25,8 +29,13 @@ title(sprintf('Applanix data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,applani
 %         time, sol good? (1 or 0), WAAS? (1 or 0), x, y, z, sig_x, sig_y
 %         9      10  11  12  13      14      15      16        17
 %         sig_z, vx, vy, vz, sig_vx, sig_vy, sig_vz, num_sats, sol_sats
+if ~exist('last_lowcost_dir', 'var') || ~ischar(last_lowcost_dir)
+   last_lowcost_dir = last_applanix_dir; 
+end
 disp('Please select NovAtel log file')
-[novatel_file, novatel_path] = uigetfile(text_files, 'Select NovAtel Log File', applanix_path);
+[novatel_file, novatel_path] = uigetfile(text_files, 'Select NovAtel Log File', last_lowcost_dir);
+last_lowcost_dir = novatel_path;
+
 novatel = csvread([novatel_path novatel_file]);
 nov_time = novatel(:,1);
 % Convert ECEF to lat-long-altitude
@@ -43,7 +52,7 @@ title(sprintf('NovAtel XY data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,novat
 %Format:  1     2        3        4        5       6       7
 %         time, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
 disp('Please select IMU log file')
-[imu_file, imu_path] = uigetfile(text_files, 'Select IMU Log File', novatel_path);
+[imu_file, imu_path] = uigetfile(text_files, 'Select IMU Log File', last_lowcost_dir);
 imu = csvread([imu_path imu_file]);
 % special correction: the first 48 values in oakland_oct24_meh3 seem to be old serial
 % data recorded all at once.
