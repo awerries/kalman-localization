@@ -48,19 +48,16 @@ plot(gps_x, gps_y);
 pathsplit = strsplit(novatel_path, filesep);
 title(sprintf('NovAtel XY data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,novatel_file),'Interpreter','none');
 
-%% Import IMU2 data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Format:  1     2        3        4        5       6       7
-%         time, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
+%% Import IMU data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Format:  1                2              3        4        5        6       7       8
+%         meas_start_time, meas_end_time, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z
 disp('Please select IMU log file')
 [imu_file, imu_path] = uigetfile(text_files, 'Select IMU Log File', last_lowcost_dir);
 imu = csvread([imu_path imu_file]);
-% special correction: the first 48 values in oakland_oct24_meh3 seem to be old serial
-% data recorded all at once.
-imu = imu(49:end,:);
-% Correct accel (must swap axis and convert to m/s^2)
-imu(:,2:4) = [-imu(:,3) imu(:,2) -imu(:,4)]/256*9.80665;
-% Convert gyro to rad/s
-imu(:,5:7) = [-imu(:,5) imu(:,6) -imu(:,7)]*0.001214225560616;
+% only using end_time here
+imu = imu(:,2:end);
+% convert g's to m/s^2 using local gravity estimate
+imu(:,2:4) = imu(:,2:4)*9.80097;
 
 %% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [start_time,Is] = max([min(nov_time),min(gt_t),min(imu(:,1))]);
@@ -81,7 +78,7 @@ imu = imu(imu(:,1) > 0, :);
 imu_time = imu(:,1);
 
 %% Generate filter time, configurable epochs
-epoch = .02;
+epoch = .01;
 filter_time = 0:epoch:imu_time(end);
 
 %% Generate ground truth
@@ -90,7 +87,7 @@ min_y = min([min(gps_y),min(gt_xyz(:,1))]);
 min_z = min([min(gps_h),min(gt_xyz(:,3))]);
 gps_x = gps_x(nov_mask) - min_x;
 gps_y = gps_y(nov_mask) - min_y;
-gps_h = gps_h(nov_mask)-1.5;
+gps_h = gps_h(nov_mask) - 1.5;
 ground_truth = zeros(length(nov_time), 6);
 ground_truth_full = zeros(length(filter_time), 6);
 
@@ -108,39 +105,6 @@ ground_truth_full(:,5) = interp1(gt_t,gt_rot(:,1),filter_time)';
 ground_truth_full(:,6) = interp1(gt_t,gt_rot(:,2),filter_time)';
 ground_truth_full(:,7) = interp1(gt_t,gt_rot(:,3),filter_time)';
 
-
-%% Compare ground truth to raw NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figurec;
-plot(gps_x, gps_y,'r--', 'LineWidth', 2);
-xlabel('Easting (m)');
-ylabel('Northing (m)');
-hold on;
-plot(ground_truth(:,1),ground_truth(:,2),'c');
-legend('NovAtel','Applanix');
-axis equal;
-
-figurec;
-subplot(311);
-plot(nov_time, gps_x,'r--', 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Easting (m)');
-hold on; plot(nov_time, ground_truth(:,1),'c');
-legend('NovAtel','Applanix');
-
-subplot(312);
-plot(nov_time, gps_y,'r--', 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Northing (m)');
-hold on; plot(nov_time, ground_truth(:,2),'c');
-legend('NovAtel','Applanix','Location','SouthEast');
-
-subplot(313);
-plot(nov_time, gps_h,'r--', 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Northing (m)');
-hold on; plot(nov_time, ground_truth(:,3),'c');
-legend('NovAtel','Applanix','Location','SouthEast');
-
 %% Initialize Error Estimates %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Constants
 deg_to_rad = 0.01745329252;
@@ -152,7 +116,7 @@ mug_to_mps2 = 9.80665E-6;
 output_profile_name = 'Output_Profile.csv';
 
 % Initial attitude uncertainty per axis (deg, converted to rad)
-LC_KF_config.init_att_unc = degtorad(3);
+LC_KF_config.init_att_unc = degtorad(2);
 % Initial velocity uncertainty per axis (m/s)
 LC_KF_config.init_vel_unc = 6.2;
 % Initial position uncertainty per axis (m)
@@ -188,63 +152,5 @@ init_cond = [novatel(1,4:6) novatel(1,10:12) ground_truth(1,4:6)+[deg2rad(4.2) d
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [out_profile,out_IMU_bias_est,out_KF_SD] = ...
     Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, n);
-xyz = out_profile(:,2:4);
-llh = ecef2lla(xyz);
-[x,y] = deg2utm(llh(:,1),llh(:,2));
-x = x-min_x;
-y = y-min_y;
-h = -llh(:,3)-1.5;
-figurec;
-plot(x, y,'r--', 'LineWidth', 2);
-xlabel('Easting (m)');
-ylabel('Northing (m)');
-hold on;
-plot(ground_truth(:,1),ground_truth(:,2),'c');
-plot(gps_x, gps_y,'b-.', 'LineWidth', 2);
-legend('Filtered','Applanix','NovAtel');
-axis equal;
 
-figurec;
-subplot(211);
-plot(filter_time, x,'r--', 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Easting (m)');
-hold on; plot(filter_time, ground_truth_full(:,1),'c');
-legend('Filtered','Applanix');
-
-subplot(212);
-plot(filter_time, y,'r--', 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Northing (m)');
-hold on; plot(filter_time, ground_truth_full(:,2),'c');
-legend('Filtered','Applanix','Location','SouthEast');
-
-% subplot(313);
-% plot(imu_time, h,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Height (m)');
-% hold on; plot(imu_time, ground_truth_full(:,3),'c');
-% legend('Filtered','Applanix','Location','SouthEast');
-%% Compute error statistics on groundtruth vs NovAtel %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-distance = ((ground_truth(:,1)-gps_x).^2 + (ground_truth(:,2)-gps_y).^2).^0.5;
-fprintf('\nRMS Raw:%f\n',rms(distance))
-fprintf('Max Raw:%f\n',max(distance))
-
-%% Compute error statistics on groundtruth vs filter output %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
-fprintf('\nRMS Filter:%f\n',rms(distance))
-fprintf('Max Filter:%f\n',max(distance))
-figurec;
-subplot(211);
-plot(filter_time, x-ground_truth_full(:,1),'r--', 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Easting error (m)');
-ylim([-10 10])
-subplot(212);
-plot(filter_time, y-ground_truth_full(:,2),'r--', 'LineWidth', 2);
-xlabel('Time (s)');
-ylabel('Northing error (m)');
-ylim([-10 10])
-
-
-
+generate_plots

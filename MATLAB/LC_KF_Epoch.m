@@ -128,15 +128,15 @@ est_r_eb_e_new = est_r_eb_e_old - x_est_new(7:9);
 % Update IMU bias estimates
 est_IMU_bias_new = est_IMU_bias_old + x_est_new(10:15);
 
-% Adapt R matrix to sensor noise (Werries)
-k = size(innovations,2);
-if k > n
-    C = zeros(6,6);
-    for j = k-n:k
-        C = C + innovations(:,j)*innovations(:,j)';
-    end
-    C = C./n;
-    R_matrix = C - H_matrix*P_matrix_new*H_matrix';
-    innovations = innovations(:,ceil((k-n)/2):end);
-end
+% % Adapt R matrix to sensor noise (Werries)
+% k = size(innovations,2);
+% if k > n
+%     C = zeros(6,6);
+%     for j = k-n:k
+%         C = C + innovations(:,j)*innovations(:,j)';
+%     end
+%     C = C./n;
+%     R_matrix = C - H_matrix*P_matrix_new*H_matrix';
+%     innovations = innovations(:,ceil((k-n)/2):end);
+% end
 % Ends
