@@ -96,6 +96,7 @@ out_profile(1,8:10) = CTM_to_Euler(old_est_C_b_n')';
 % Initialize Kalman filter P matrix and IMU bias states
 P_matrix = Initialize_LC_P_matrix(LC_KF_config);
 est_IMU_bias = zeros(6,1);
+est_IMU_bias(4:6) = [-0.02813214; -0.0006758; 0.0127618];
 
 % Generate IMU bias and clock output records
 out_IMU_bias_est(1,1) = old_time;
