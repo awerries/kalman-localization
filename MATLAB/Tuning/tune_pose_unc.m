@@ -20,7 +20,7 @@ pos_i = randperm(num_items);
 rms_error_filter = zeros(1,num_items);
 max_error_filter = zeros(1,num_items);
 parfor i = 1:num_items
-    fprintf('Iteration: %d, AttUnc: %08.3f, VelUnc: %08.3f, PosUnc: %08.3f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));
+    fprintf('Iteration: %d, AttUnc: %08.5f, VelUnc: %08.5f, PosUnc: %08.5f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));
     temp_conf = LC_KF_config;
     temp_conf.init_att_unc = deg2rad(init_att_unc(att_i(i)));
     temp_conf.init_vel_unc = init_vel_unc(vel_i(i));
@@ -38,8 +38,8 @@ parfor i = 1:num_items
 end
 
 [minmax, i] = min(max_error_filter);
-fprintf('\nBest max: %08.3f, rms is %08.3f\n', minmax, rms_error_filter(i));
-fprintf('Best iteration for max: %d, AttUnc: %08.3f, VelUnc: %08.3f, PosUnc: %08.3f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));
+fprintf('\nBest max: %08.5f, rms is %08.5f\n', minmax, rms_error_filter(i));
+fprintf('Best iteration for max: %d, AttUnc: %08.5f, VelUnc: %08.5f, PosUnc: %08.5f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));
 [minrms, i] = min(rms_error_filter);
-fprintf('Best rms: %08.3f, max is %08.3f\n', minrms, max_error_filter(i));
-fprintf('Best iteration for rms: %d, AttUnc: %08.3f, VelUnc: %08.3f, PosUnc: %08.3f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));
+fprintf('Best rms: %08.5f, max is %08.5f\n', minrms, max_error_filter(i));
+fprintf('Best iteration for rms: %d, AttUnc: %08.5f, VelUnc: %08.5f, PosUnc: %08.5f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));

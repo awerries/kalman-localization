@@ -2,6 +2,9 @@
 % Adam Werries 2016, see Apache 2.0 license.
 close all;
 addpath('GrovesCode');
+addpath('Utilities');
+addpath('Tuning');
+
 if ~exist('last_applanix_dir', 'var') || ~ischar(last_applanix_dir) 
    last_applanix_dir = pwd;
 end
@@ -78,7 +81,7 @@ imu = imu(imu(:,1) > 0, :);
 imu_time = imu(:,1);
 
 %% Generate filter time, configurable epochs
-epoch = .01;
+epoch = .015;
 filter_time = 0:epoch:imu_time(end);
 
 %% Generate ground truth
@@ -116,16 +119,16 @@ mug_to_mps2 = 9.80665E-6;
 output_profile_name = 'Output_Profile.csv';
 
 % Initial attitude uncertainty per axis (deg, converted to rad)
-LC_KF_config.init_att_unc = degtorad(2);
+LC_KF_config.init_att_unc = degtorad(1.185);
 % Initial velocity uncertainty per axis (m/s)
-LC_KF_config.init_vel_unc = 6.2;
+LC_KF_config.init_vel_unc = 10;
 % Initial position uncertainty per axis (m)
-LC_KF_config.init_pos_unc = 5;
+LC_KF_config.init_pos_unc = 6.9;
 % Initial accelerometer bias uncertainty per instrument (micro-g, converted
 % to m/s^2)
 LC_KF_config.init_b_a_unc = 2000 * mug_to_mps2;
 % Initial gyro bias uncertainty per instrument (deg/hour, converted to rad/sec)
-LC_KF_config.init_b_g_unc = 20 * deg_to_rad / 3600;
+LC_KF_config.init_b_g_unc = 200 * deg_to_rad / 3600;
 
 % Gyro noise PSD (deg^2 per hour, converted to rad^2/s)                
 LC_KF_config.gyro_noise_PSD = (3.6 * deg_to_rad / 60)^2;
@@ -134,12 +137,12 @@ LC_KF_config.accel_noise_PSD = (1050 * mug_to_mps2)^2;
 % Accelerometer bias random walk PSD (m^2 s^-5)
 LC_KF_config.accel_bias_PSD = 1.0E-5;
 % Gyro bias random walk PSD (rad^2 s^-3)
-LC_KF_config.gyro_bias_PSD = 2.0E-10;
+LC_KF_config.gyro_bias_PSD = 2.0E-6;
 
 % Position measurement noise SD per axis (m)
-LC_KF_config.pos_meas_SD = 5.2;
+LC_KF_config.pos_meas_SD = 0.56206896;
 % Velocity measurement noise SD per axis (m/s)
-LC_KF_config.vel_meas_SD = 0.3;
+LC_KF_config.vel_meas_SD = 0.2206;
 % number of measurements to use for innovation adaptive estimation
 n = Inf;
 % Seeding of the random number generator for reproducability. Change 
@@ -147,7 +150,7 @@ n = Inf;
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
 %% Format initial conditions
 % x y z vx vy vz r p y
-init_cond = [novatel(1,4:6) novatel(1,10:12) ground_truth(1,4:6)+[deg2rad(4.2) deg2rad(77.5) deg2rad(-51.5)]];
+init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(110.10) deg2rad(29) deg2rad(-4.2)];
 
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [out_profile,out_IMU_bias_est,out_KF_SD] = ...

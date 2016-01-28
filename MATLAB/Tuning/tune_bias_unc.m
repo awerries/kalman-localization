@@ -19,8 +19,8 @@ max_error_filter = zeros(1,num_items);
 parfor i = 1:num_items
     fprintf('Iteration: %d, aBiasUnc: %08.3f, gBiasUnc: %08.3f\n', i, init_b_a_unc(ba_i(i)), init_b_g_unc(bg_i(i)));
     temp_conf = LC_KF_config;
-    temp_conf.init_att_unc = init_b_a_unc(ba_i(i)) * mug_to_mps2;
-    temp_conf.init_vel_unc = init_b_g_unc(bg_i(i)) * deg_to_rad / 3600;
+    temp_conf.init_b_a_unc = init_b_a_unc(ba_i(i)) * mug_to_mps2;
+    temp_conf.init_b_g_unc = init_b_g_unc(bg_i(i)) * deg_to_rad / 3600;
     [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, 400);
     xyz = out_profile(:,2:4);
     llh = ecef2lla(xyz);
