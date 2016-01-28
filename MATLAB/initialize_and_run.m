@@ -131,13 +131,13 @@ LC_KF_config.init_b_a_unc = 2000 * mug_to_mps2;
 LC_KF_config.init_b_g_unc = 200 * deg_to_rad / 3600;
 
 % Gyro noise PSD (deg^2 per hour, converted to rad^2/s)                
-LC_KF_config.gyro_noise_PSD = (3.6 * deg_to_rad / 60)^2;
+LC_KF_config.gyro_noise_PSD = (4 * deg_to_rad / 60)^2;
 % Accelerometer noise PSD (micro-g^2 per Hz, converted to m^2 s^-3)                
-LC_KF_config.accel_noise_PSD = (1050 * mug_to_mps2)^2;
+LC_KF_config.accel_noise_PSD = (2154 * mug_to_mps2)^2;
 % Accelerometer bias random walk PSD (m^2 s^-5)
-LC_KF_config.accel_bias_PSD = 1.0E-5;
+LC_KF_config.accel_bias_PSD = 1.604e-5;
 % Gyro bias random walk PSD (rad^2 s^-3)
-LC_KF_config.gyro_bias_PSD = 2.0E-6;
+LC_KF_config.gyro_bias_PSD = 1.701e-8;
 
 % Position measurement noise SD per axis (m)
 LC_KF_config.pos_meas_SD = 0.56206896;
