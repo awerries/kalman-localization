@@ -21,7 +21,7 @@ parfor i = 1:num_items
     temp_conf = LC_KF_config;
     temp_conf.pos_meas_SD = pos_meas_SD(pos_i(i));
     temp_conf.vel_meas_SD = vel_meas_SD(vel_i(i));
-    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, Inf);
+    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, est_IMU_bias);
     xyz = out_profile(:,2:4);
     if ~any(any(isnan(xyz))) && ~any(any(isinf(xyz)))
         llh = ecef2lla(xyz);

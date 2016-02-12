@@ -30,7 +30,7 @@ parfor i = 1:num_items
     temp_conf.accel_noise_PSD = (accel_noise_PSD(accel_noise_i(i))* mug_to_mps2)^2;
     temp_conf.accel_bias_PSD = accel_bias_PSD(accel_bias_i(i));
     temp_conf.gyro_bias_PSD = gyro_bias_PSD(gyro_bias_i(i));
-    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, 400);
+    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, est_IMU_bias);
     xyz = out_profile(:,2:4);
     if ~any(any(isnan(xyz))) && ~any(any(isinf(xyz)))
         llh = ecef2lla(xyz);

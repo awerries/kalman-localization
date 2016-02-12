@@ -10,7 +10,7 @@ rms_error_filter = zeros(1,num_items);
 max_error_filter = zeros(1,num_items);
 parfor i = 1:num_items
     fprintf('Iteration: %d, Epoch: %08.7f\n', i, epoch(i));
-    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch(i), lla, novatel, imu, LC_KF_config, 400);
+    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch(i), lla, novatel, imu, LC_KF_config, est_IMU_bias);
     xyz = out_profile(:,2:4);
     llh = ecef2lla(xyz);
     [x,y] = deg2utm(llh(:,1),llh(:,2));
