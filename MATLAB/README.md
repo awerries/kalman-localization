@@ -4,4 +4,4 @@ The MATLAB code borrows heavily from Paul D. Groves' book, *Principles of GNSS, 
 Files in the Utilities folder are also not my code, but rather code found through MathWorks File Exchange.
 
 # Running the code
-Simply run *initialize\_and\_run.m*, and it will prompt you to select a ground truth file (Applanix format), a NovAtel log (pre-parsed by my *read\_gps\_log.py* code in awerries/rpi-sensors/Python_Tools), and the IMU log (pre-parsed by my *read\_imu\_log.py* in the same place).
+Simply run *initialize\_and\_run.m*, and it will prompt you to select a ground truth file (Applanix format), a NovAtel log (pre-parsed by my *read\_gps\_log.py* code in awerries/rpi-sensors/Python_Tools), and the IMU log (pre-parsed by my *read\_imu\_log.py* in the same place). I may make some sample data available in the future.
