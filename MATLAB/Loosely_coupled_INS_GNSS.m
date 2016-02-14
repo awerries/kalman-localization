@@ -1,5 +1,5 @@
-function [out_profile,out_IMU_bias_est,out_KF_SD] =...
-    Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, LC_KF_config, n_meas)
+function [out_profile,out_IMU_bias_est,out_KF_SD,R_matrix,innovations] =...
+    Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, LC_KF_config, est_IMU_bias)
 %Loosely_coupled_INS_GNSS - Simulates inertial navigation using ECEF
 % navigation equations and kinematic model, GNSS using a least-squares
 % positioning algorithm, and loosely-coupled INS/GNSS integration. 
@@ -25,6 +25,7 @@ function [out_profile,out_IMU_bias_est,out_KF_SD] =...
 %     .gyro_bias_PSD          Gyro bias random walk PSD (rad^2 s^-3)
 %     .pos_meas_SD            Position measurement noise SD per axis (m)
 %     .vel_meas_SD            Velocity measurement noise SD per axis (m/s)
+%     .init_biases            IMU bias initialization
 %
 % Outputs:
 %   out_profile        Navigation solution as a motion profile array
@@ -71,7 +72,7 @@ function [out_profile,out_IMU_bias_est,out_KF_SD] =...
 %  Column 15: Y gyro bias uncertainty (rad/s)
 %  Column 16: Z gyro bias uncertainty (rad/s)
 
-old_time = gps(1,1);
+old_time = filter_time(1);
 
 % Initialize INS from GPS
 old_est_r_eb_e = init_cond(1:3)';
@@ -95,8 +96,6 @@ out_profile(1,8:10) = CTM_to_Euler(old_est_C_b_n')';
 
 % Initialize Kalman filter P matrix and IMU bias states
 P_matrix = Initialize_LC_P_matrix(LC_KF_config);
-est_IMU_bias = zeros(6,1);
-est_IMU_bias(4:6) = [-0.02813214; -0.0006758; 0.0127618];
 
 % Generate IMU bias and clock output records
 out_IMU_bias_est(1,1) = old_time;
@@ -115,9 +114,8 @@ R_matrix(4:6,1:3) = zeros(3);
 R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
 
 % Main loop
-% fprintf('\n\n\n\n\n\n\n\n\n');
-% rewind = '\b\b\b\b\b\b\b\b\b';
-GNSS_epoch = 2;
+GNSS_epoch = 1;
+last_GNSS_epoch = GNSS_epoch;
 innovations = zeros(6,1);
 last_imu_index = 1;
 for i = 2:length(filter_time)
@@ -125,9 +123,7 @@ for i = 2:length(filter_time)
     % find range of imu measurements to use
     indices = find(imu(last_imu_index+1:end,1) < time);
     imu_range_end = last_imu_index + indices(end) - 1;
-    % Correct IMU errors and align to ECEF frame
-%     [~,~,~,~,C_b_n] = ECEF_to_NED(old_est_r_eb_e,old_est_v_eb_e,old_est_C_b_e);
-%     fprintf('last_imu_index: %d, imu_range_end: %d\n',last_imu_index,imu_range_end);
+    % Apply IMU bias estimates
     meas_f_ib_b = mean(imu(last_imu_index+1:imu_range_end,2:4))' - est_IMU_bias(1:3);
     meas_omega_ib_b = mean(imu(last_imu_index+1:imu_range_end,5:7))' - est_IMU_bias(4:6);
     
@@ -139,9 +135,8 @@ for i = 2:length(filter_time)
 %         GNSS_epoch = GNSS_epoch + 1;
 %     end
     % Determine whether to update GNSS simulation and run Kalman filter
-    if GNSS_epoch < size(gps,1)+1 && time > gps(GNSS_epoch,1) && time < 374
-%         fprintf(strcat(rewind,'GNSS %04d'),GNSS_epoch);
-        tor_s = time - gps(GNSS_epoch-1,1);  % KF time interval
+    if GNSS_epoch < size(gps,1)+1 && time > gps(GNSS_epoch,1)
+        tor_s = time - gps(last_GNSS_epoch,1);  % KF time interval
         GNSS_r_eb_e = gps(GNSS_epoch,4:6)';
         GNSS_v_eb_e = gps(GNSS_epoch,10:12)';
         est_L_b = lla(GNSS_epoch,1);
@@ -150,7 +145,7 @@ for i = 2:length(filter_time)
         [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,innovations,R_matrix] =...
             LC_KF_Epoch(GNSS_r_eb_e,GNSS_v_eb_e,tor_s,est_C_b_e,...
             est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,meas_f_ib_b,...
-            est_L_b,LC_KF_config,innovations,R_matrix,n_meas,meas_omega_ib_b);
+            est_L_b,LC_KF_config,innovations,R_matrix,meas_omega_ib_b);
 
         % Generate IMU bias and clock output records
         out_IMU_bias_est(GNSS_epoch,1) = time;
@@ -161,6 +156,7 @@ for i = 2:length(filter_time)
         for n = 1:15
             out_KF_SD(GNSS_epoch,n+1) = sqrt(P_matrix(n,n));
         end % for i
+        last_GNSS_epoch = GNSS_epoch;
         GNSS_epoch = GNSS_epoch + 1;
     end % if time    
     

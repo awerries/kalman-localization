@@ -22,10 +22,7 @@ gt_speed = gt(:,21);
 gt_rot = gt(:,11:13);
 gt_accel = gt(:,14:16);
 gt_xyz = gt(:,27:29);
-figurec;
-plot(gt_xyz(:,2),gt_xyz(:,1));
-pathsplit = strsplit(applanix_path, filesep);
-title(sprintf('Applanix data: %s%s%s',cell2mat(pathsplit(end-1)),filesep,applanix_file),'Interpreter','none');
+
 
 %% Import NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Format:  1     2                   3               4  5  6  7      8      
@@ -90,9 +87,9 @@ min_y = min([min(gps_y),min(gt_xyz(:,1))]);
 min_z = min([min(gps_h),min(gt_xyz(:,3))]);
 gps_x = gps_x(nov_mask) - min_x;
 gps_y = gps_y(nov_mask) - min_y;
-gps_h = gps_h(nov_mask) - 1.5;
+gps_h = gps_h(nov_mask);
 ground_truth = zeros(length(nov_time), 6);
-ground_truth_full = zeros(length(filter_time), 6);
+ground_truth_full = zeros(length(filter_time), 9);
 
 ground_truth(:,1) =  (interp1(gt_t,gt_xyz(:,2),nov_time)-min_x)';
 ground_truth(:,2) =  (interp1(gt_t,gt_xyz(:,1),nov_time)-min_y)';
@@ -104,9 +101,12 @@ ground_truth(:,6) =  interp1(gt_t,gt_rot(:,3),nov_time)';
 ground_truth_full(:,1) = (interp1(gt_t,gt_xyz(:,2),filter_time)-min_x)';
 ground_truth_full(:,2) = (interp1(gt_t,gt_xyz(:,1),filter_time)-min_y)';
 ground_truth_full(:,3) = interp1(gt_t,gt_xyz(:,3),filter_time)';
-ground_truth_full(:,5) = interp1(gt_t,gt_rot(:,1),filter_time)';
-ground_truth_full(:,6) = interp1(gt_t,gt_rot(:,2),filter_time)';
-ground_truth_full(:,7) = interp1(gt_t,gt_rot(:,3),filter_time)';
+ground_truth_full(:,4) = interp1(gt_t,gt_rot(:,1),filter_time)';
+ground_truth_full(:,5) = interp1(gt_t,gt_rot(:,2),filter_time)';
+ground_truth_full(:,6) = interp1(gt_t,gt_rot(:,3),filter_time)';
+ground_truth_full(:,7) = interp1(gt_t,gt_vel(:,1),filter_time)';
+ground_truth_full(:,8) = interp1(gt_t,gt_vel(:,2),filter_time)';
+ground_truth_full(:,9) = interp1(gt_t,gt_vel(:,3),filter_time)';
 
 %% Initialize Error Estimates %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Constants
@@ -143,8 +143,16 @@ LC_KF_config.gyro_bias_PSD = 1.701e-8;
 LC_KF_config.pos_meas_SD = 0.56206896;
 % Velocity measurement noise SD per axis (m/s)
 LC_KF_config.vel_meas_SD = 0.2206;
+% Initial estimate of accelerometer and gyro static bias
+est_IMU_bias = [
+   0.170408027078713
+  -0.335661032188668
+   0.243647361094568
+  -0.023874613331771
+  -0.002213056152980
+   0.011813470478624];
 % number of measurements to use for innovation adaptive estimation
-n = Inf;
+LC_KF_config.n = 1600;
 % Seeding of the random number generator for reproducability. Change 
 % this value for a different random number sequence (may not work in Octave).
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
@@ -153,7 +161,9 @@ RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
 init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(110.10) deg2rad(29) deg2rad(-4.2)];
 
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[out_profile,out_IMU_bias_est,out_KF_SD] = ...
-    Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, n);
+disp('Beginning processing');
+[out_profile,out_IMU_bias_est,out_KF_SD, out_R_matrix, innovations] = ...
+    Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, est_IMU_bias);
 
+generate_error_metrics
 generate_plots
