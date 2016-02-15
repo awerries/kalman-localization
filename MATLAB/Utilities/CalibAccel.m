@@ -55,7 +55,6 @@ function [M,B] = calibaccel(data)
 %   Author:  Balaji Kumar, Sep 2011, Canada
 %   Free to distribute 
 %-------------------------------------------------------------------------------
-   clc  
  
 % Configurable variables
 

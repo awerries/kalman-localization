@@ -6,11 +6,11 @@
 %
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 20;
+k_max = 40;
 % Specify ranges
-roll = linspace(-15,15,30);
-pitch = linspace(-15,15,30);
-yaw = linspace(-180,180,30);
+roll = linspace(-30,30,50);
+pitch = linspace(-30,30,50);
+yaw = linspace(-180,180,50);
 % Repeat arrays
 roll = repmat(roll, [1 k_max]);
 pitch = repmat(pitch, [1 k_max]);
@@ -25,7 +25,7 @@ max_error_filter = zeros(1,num_items);
 parfor i = 1:num_items
     fprintf('Iteration: %d, Roll: %08.5f, Pitch: %08.5f, Yaw: %08.5f\n', i, roll(roll_i(i)), pitch(pitch_i(i)), yaw(yaw_i(i)));
     temp_cond = init_cond;
-    temp_cond(7:9) = [deg2rad(roll(roll_i(i))) deg2rad(roll(roll_i(i))) deg2rad(yaw(yaw_i(i)))];
+    temp_cond(7:9) = [deg2rad(roll(roll_i(i))) deg2rad(pitch(pitch_i(i))) deg2rad(yaw(yaw_i(i)))];
     [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(temp_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, est_IMU_bias);
     xyz = out_profile(:,2:4);
     llh = ecef2lla(xyz);
