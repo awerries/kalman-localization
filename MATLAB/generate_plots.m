@@ -111,7 +111,7 @@ legend('Filtered','Applanix','Location','SouthEast');
 zero_line = zeros(length(filter_time), 1);
 figurec;
 subplot(311);
-plot(filter_time, x-ground_truth_full(:,1),'r--', 'LineWidth', 2); hold on;
+plot(filter_time, x-ground_truth_full(:,1),'r-', 'LineWidth', 2); hold on;
 plot(nov_time, gps_x-ground_truth(:,1), '.g');
 xlabel('Time (s)');
 ylabel('Easting error (m)');
@@ -120,7 +120,7 @@ legend('Filter','Novatel');
 plot(filter_time, zero_line, '--b');
 
 subplot(312);
-plot(filter_time, y-ground_truth_full(:,2),'r--', 'LineWidth', 2); hold on;
+plot(filter_time, y-ground_truth_full(:,2),'r-', 'LineWidth', 2); hold on;
 plot(nov_time, gps_y-ground_truth(:,2), '.g');
 xlabel('Time (s)');
 ylabel('Northing error (m)');
@@ -129,7 +129,7 @@ legend('Filter','Novatel');
 plot(filter_time, zero_line, '--b');
 
 subplot(313);
-plot(filter_time, h-ground_truth_full(:,3),'r--', 'LineWidth', 2); hold on;
+plot(filter_time, h-ground_truth_full(:,3),'r-', 'LineWidth', 2); hold on;
 plot(nov_time, gps_h-ground_truth(:,3), '.g');
 xlabel('Time (s)');
 ylabel('Altitude error (m)');

@@ -1,4 +1,4 @@
-function [out_profile,out_IMU_bias_est,out_KF_SD,R_matrix,innovations] =...
+function [out_profile,out_IMU_bias_est,out_KF_SD,R_matrix,residuals] =...
     Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, LC_KF_config, est_IMU_bias)
 %Loosely_coupled_INS_GNSS - Simulates inertial navigation using ECEF
 % navigation equations and kinematic model, GNSS using a least-squares
@@ -116,7 +116,7 @@ R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
 % Main loop
 GNSS_epoch = 1;
 last_GNSS_epoch = GNSS_epoch;
-innovations = zeros(6,1);
+residuals = zeros(6,1);
 last_imu_index = 1;
 for i = 2:length(filter_time)
     time = filter_time(i);
@@ -142,10 +142,13 @@ for i = 2:length(filter_time)
         est_L_b = lla(GNSS_epoch,1);
         
         % Run Integration Kalman filter
-        [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,innovations,R_matrix] =...
+        [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,residuals(:,end+1), H_matrix] =...
             LC_KF_Epoch(GNSS_r_eb_e,GNSS_v_eb_e,tor_s,est_C_b_e,...
             est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,meas_f_ib_b,...
-            est_L_b,LC_KF_config,innovations,R_matrix,meas_omega_ib_b);
+            est_L_b,LC_KF_config,R_matrix,meas_omega_ib_b);
+
+        % Run adaptive algorithm
+        [R_matrix] = adapt_noise_covariance(H_matrix, P_matrix, R_matrix, LC_KF_config.n, residuals);
 
         % Generate IMU bias and clock output records
         out_IMU_bias_est(GNSS_epoch,1) = time;
