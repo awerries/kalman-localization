@@ -58,7 +58,12 @@ imu = csvread([imu_path imu_file]);
 imu = imu(:,2:end);
 % convert g's to m/s^2 using local gravity estimate
 imu(:,2:4) = imu(:,2:4)*9.80097;
-
+% rotate sensor readings 180 deg about the x-axis
+rotation = [1   0         0;
+            0   cosd(180) -sind(180)
+            0   sind(180) cosd(180)];
+imu(:,2:4) = (rotation*imu(:,2:4)')';
+imu(:,5:7) = (rotation*imu(:,5:7)')';
 %% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 [start_time,Is] = max([min(nov_time),min(gt_t),min(imu(:,1))]);
 [end_time,Ie] = min([max(nov_time),max(gt_t),max(imu(:,1))]);
@@ -119,16 +124,16 @@ mug_to_mps2 = 9.80665E-6;
 output_profile_name = 'Output_Profile.csv';
 
 % Initial attitude uncertainty per axis (deg, converted to rad)
-LC_KF_config.init_att_unc = degtorad(1.185);
+LC_KF_config.init_att_unc = degtorad(1.0);
 % Initial velocity uncertainty per axis (m/s)
-LC_KF_config.init_vel_unc = 10;
+LC_KF_config.init_vel_unc = 6.0;
 % Initial position uncertainty per axis (m)
-LC_KF_config.init_pos_unc = 6.9;
+LC_KF_config.init_pos_unc = 1.0;
 % Initial accelerometer bias uncertainty per instrument (micro-g, converted
 % to m/s^2)
-LC_KF_config.init_b_a_unc = 2000 * mug_to_mps2;
+LC_KF_config.init_b_a_unc = 1700 * mug_to_mps2;
 % Initial gyro bias uncertainty per instrument (deg/hour, converted to rad/sec)
-LC_KF_config.init_b_g_unc = 200 * deg_to_rad / 3600;
+LC_KF_config.init_b_g_unc = 400 * deg_to_rad / 3600;
 
 % Gyro noise PSD (deg^2 per hour, converted to rad^2/s)                
 LC_KF_config.gyro_noise_PSD = (4 * deg_to_rad / 60)^2;
@@ -145,20 +150,21 @@ LC_KF_config.pos_meas_SD = 0.56206896;
 LC_KF_config.vel_meas_SD = 0.2206;
 % Initial estimate of accelerometer and gyro static bias
 est_IMU_bias = [
-   0.170408027078713
-  -0.335661032188668
-   0.243647361094568
-  -0.023874613331771
-  -0.002213056152980
-   0.011813470478624];
+  -0.054369016444116
+   0.718430724232638
+  -1.302138967909152
+  -0.003512977073445
+  -0.014658978055793
+  -0.004080483561359];
 % number of measurements to use for innovation adaptive estimation
-LC_KF_config.n = 1600;
+LC_KF_config.n = Inf;
 % Seeding of the random number generator for reproducability. Change 
 % this value for a different random number sequence (may not work in Octave).
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
 %% Format initial conditions
 % x y z vx vy vz r p y
-init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(110.10) deg2rad(29) deg2rad(-4.2)];
+init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-28.7751) deg2rad(-20.20408) deg2rad(-69.79592)];
+% init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-5.8461) deg2rad(7.27135) deg2rad(178.782)];
 
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('Beginning processing');
