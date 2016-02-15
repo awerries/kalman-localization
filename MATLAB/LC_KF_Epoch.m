@@ -1,7 +1,7 @@
 function [est_C_b_e_new,est_v_eb_e_new,est_r_eb_e_new,est_IMU_bias_new,...
             P_matrix_new,innovations,R_matrix] = LC_KF_Epoch(GNSS_r_eb_e,GNSS_v_eb_e,tor_s,...
             est_C_b_e_old,est_v_eb_e_old,est_r_eb_e_old,est_IMU_bias_old,...
-            P_matrix_old,meas_f_ib_b,est_L_b_old,LC_KF_config,innovations,R_matrix,n,meas_omega_ib_b)
+            P_matrix_old,meas_f_ib_b,est_L_b_old,LC_KF_config,innovations,R_matrix,meas_omega_ib_b)
 %LC_KF_Epoch - Implements one cycle of the loosely coupled INS/GNSS
 % Kalman filter plus closed-loop correction of all inertial states
 %
@@ -117,6 +117,9 @@ innovations(:,end+1) = delta_z; % Addition (Werries)
 
 % 10. Update state estimation error covariance matrix using (3.25)
 P_matrix_new = (eye(15) - K_matrix * H_matrix) * P_matrix_propagated;
+% More "stable" update equation, higher computational cost
+% factor = (eye(15) - K_matrix * H_matrix);
+% P_matrix_new = factor * P_matrix_propagated * factor' + K_matrix*R_matrix*K_matrix';
 
 % CLOSED-LOOP CORRECTION
 
@@ -128,15 +131,15 @@ est_r_eb_e_new = est_r_eb_e_old - x_est_new(7:9);
 % Update IMU bias estimates
 est_IMU_bias_new = est_IMU_bias_old + x_est_new(10:15);
 
-% % Adapt R matrix to sensor noise (Werries)
-% k = size(innovations,2);
-% if k > n
-%     C = zeros(6,6);
-%     for j = k-n:k
-%         C = C + innovations(:,j)*innovations(:,j)';
-%     end
-%     C = C./n;
-%     R_matrix = C - H_matrix*P_matrix_new*H_matrix';
-%     innovations = innovations(:,ceil((k-n)/2):end);
-% end
+% Adapt R matrix to sensor noise (Werries)
+k = size(innovations,2);
+if k > LC_KF_config.n
+    C = zeros(6,6);
+    for j = 1:k
+        C = C + innovations(:,j)*innovations(:,j)';
+    end
+    C = C./k;
+    R_matrix = C - H_matrix*P_matrix_new*H_matrix';
+    innovations = innovations(:,ceil(LC_KF_config.n/2):end);
+end
 % Ends
