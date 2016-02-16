@@ -141,9 +141,9 @@ LC_KF_config.accel_bias_PSD = 1.6e-5;
 LC_KF_config.gyro_bias_PSD = 1.7e-8;
 
 % Position measurement noise SD per axis (m)
-LC_KF_config.pos_meas_SD = 0.56206896;
+LC_KF_config.pos_meas_SD = 0.25;
 % Velocity measurement noise SD per axis (m/s)
-LC_KF_config.vel_meas_SD = 0.2206;
+LC_KF_config.vel_meas_SD = 0.3;
 % Initial estimate of accelerometer and gyro static bias
 est_IMU_bias = [
    0.118080614846646
@@ -153,7 +153,8 @@ est_IMU_bias = [
    0.001190264310713
   -0.012832690952057];
 % number of measurements to use for innovation adaptive estimation
-LC_KF_config.n = 470;
+% LC_KF_config.n = 470;
+LC_KF_config.n = Inf;
 % Seeding of the random number generator for reproducability. Change 
 % this value for a different random number sequence (may not work in Octave).
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));

@@ -131,6 +131,7 @@ est_r_eb_e_new = est_r_eb_e_old - x_est_new(7:9);
 
 % Return residual error
 % residual = [GNSS_r_eb_e; GNSS_v_eb_e] - [est_r_eb_e_new; est_v_eb_e_new];
+% residual = [est_r_eb_e_old; est_v_eb_e_old] - [est_r_eb_e_new; est_v_eb_e_new];
 % Update IMU bias estimates
 est_IMU_bias_new = est_IMU_bias_old + x_est_new(10:15);
 

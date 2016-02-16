@@ -3,10 +3,10 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 20;
+k_max = 30;
 % Specify ranges
-pos_meas_SD = linspace(0.05,5,30);
-vel_meas_SD = linspace(0.05,5,30);
+pos_meas_SD = linspace(0.05,20,40);
+vel_meas_SD = linspace(0.05,5,40);
 % Repeat arrays
 pos_meas_SD = repmat(pos_meas_SD, [1 k_max]);
 vel_meas_SD = repmat(vel_meas_SD, [1 k_max]);

@@ -4,7 +4,7 @@
 % Adam Werries 2016, see Apache 2.0 license.
 
 % Specify ranges
-n = 460:1:500;
+n = 300:10:1200;
 num_items = length(n);
 rms_error_filter = Inf*ones(1,num_items);
 max_error_filter = Inf*ones(1,num_items);
