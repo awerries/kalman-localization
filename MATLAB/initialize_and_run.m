@@ -146,12 +146,12 @@ LC_KF_config.pos_meas_SD = 0.25;
 LC_KF_config.vel_meas_SD = 0.3;
 % Initial estimate of accelerometer and gyro static bias
 est_IMU_bias = [
-   0.118080614846646
-   0.326125949741957
-   0.389006249942671
-  -0.026887693067172
-   0.001190264310713
-  -0.012832690952057];
+   0.117779262454384
+   0.286910957742419
+   0.490716244754052
+  -0.026455615306335
+   0.001721479262813
+  -0.012012004403584];
 % number of measurements to use for innovation adaptive estimation
 % LC_KF_config.n = 470;
 LC_KF_config.n = Inf;
@@ -160,7 +160,7 @@ LC_KF_config.n = Inf;
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
 %% Format initial conditions
 % x y z vx vy vz r p y
-init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-28.7751) deg2rad(-20.20408) deg2rad(-69.79592)];
+init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-27.551) deg2rad(-18.9796) deg2rad(-84.4898)];
 % init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-5.8461) deg2rad(7.27135) deg2rad(178.782)];
 
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
