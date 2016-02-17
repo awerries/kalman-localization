@@ -107,11 +107,16 @@ for i =1:15
     out_KF_SD(1,i+1) = sqrt(P_matrix(i,i));
 end % for i
 
-% Initialize R (moved from within LC_KF_Epoch.m
-R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
+% % Initialize R (moved from within LC_KF_Epoch.m
+% R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
+% R_matrix(1:3,4:6) = zeros(3);
+% R_matrix(4:6,1:3) = zeros(3);
+% R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
+disp(gps(1,7:9))
+R_matrix(1:3,1:3) = diag(gps(1,7:9));
 R_matrix(1:3,4:6) = zeros(3);
 R_matrix(4:6,1:3) = zeros(3);
-R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
+R_matrix(4:6,4:6) = diag(gps(1,13:15));
 
 % Main loop
 GNSS_epoch = 1;
@@ -140,7 +145,8 @@ for i = 2:length(filter_time)
         GNSS_r_eb_e = gps(GNSS_epoch,4:6)';
         GNSS_v_eb_e = gps(GNSS_epoch,10:12)';
         est_L_b = lla(GNSS_epoch,1);
-        
+        R_matrix(1:3,1:3) = diag(gps(GNSS_epoch,7:9));
+        R_matrix(4:6,4:6) = diag(gps(GNSS_epoch,13:15));
         % Run Integration Kalman filter
         [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,residuals(:,end+1), H_matrix] =...
             LC_KF_Epoch(GNSS_r_eb_e,GNSS_v_eb_e,tor_s,est_C_b_e,...
