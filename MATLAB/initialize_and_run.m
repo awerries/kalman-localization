@@ -120,11 +120,11 @@ mug_to_mps2 = 9.80665E-6;
 output_profile_name = 'Output_Profile.csv';
 
 % Initial attitude uncertainty per axis (deg, converted to rad)
-LC_KF_config.init_att_unc = degtorad(1.0);
+LC_KF_config.init_att_unc = degtorad(1.5);
 % Initial velocity uncertainty per axis (m/s)
-LC_KF_config.init_vel_unc = 6.0;
+LC_KF_config.init_vel_unc = 0.5;
 % Initial position uncertainty per axis (m)
-LC_KF_config.init_pos_unc = 1.0;
+LC_KF_config.init_pos_unc = 4;
 % Initial accelerometer bias uncertainty per instrument (micro-g, converted
 % to m/s^2)
 LC_KF_config.init_b_a_unc = 1700 * mug_to_mps2;
