@@ -3,7 +3,7 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 20;
+k_max = 30;
 % Specify ranges
 init_b_a_unc = logspace(2,4,50);
 init_b_g_unc = logspace(2,4,50);

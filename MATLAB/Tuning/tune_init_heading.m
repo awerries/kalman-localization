@@ -8,9 +8,9 @@
 
 k_max = 40;
 % Specify ranges
-roll = linspace(-30,30,50);
-pitch = linspace(-30,30,50);
-yaw = linspace(-180,180,50);
+roll = linspace(-45,45,60);
+pitch = linspace(-45,45,60);
+yaw = linspace(-180,180,60);
 % Repeat arrays
 roll = repmat(roll, [1 k_max]);
 pitch = repmat(pitch, [1 k_max]);

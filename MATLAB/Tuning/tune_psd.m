@@ -3,7 +3,7 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 20;
+k_max = 40;
 % Specify ranges
 accel_bias_PSD = logspace(-8,-5,40);
 gyro_bias_PSD = logspace(-8,-5,40);

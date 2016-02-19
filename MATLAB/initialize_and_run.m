@@ -120,25 +120,25 @@ mug_to_mps2 = 9.80665E-6;
 output_profile_name = 'Output_Profile.csv';
 
 % Initial attitude uncertainty per axis (deg, converted to rad)
-LC_KF_config.init_att_unc = degtorad(1.5);
+LC_KF_config.init_att_unc = degtorad(1.0);
 % Initial velocity uncertainty per axis (m/s)
-LC_KF_config.init_vel_unc = 0.5;
+LC_KF_config.init_vel_unc = 18.4;
 % Initial position uncertainty per axis (m)
-LC_KF_config.init_pos_unc = 4;
+LC_KF_config.init_pos_unc = 20;
 % Initial accelerometer bias uncertainty per instrument (micro-g, converted
 % to m/s^2)
-LC_KF_config.init_b_a_unc = 1700 * mug_to_mps2;
+LC_KF_config.init_b_a_unc = 4700 * mug_to_mps2;
 % Initial gyro bias uncertainty per instrument (deg/hour, converted to rad/sec)
-LC_KF_config.init_b_g_unc = 400 * deg_to_rad / 3600;
+LC_KF_config.init_b_g_unc = 260 * deg_to_rad / 3600;
 
 % Gyro noise PSD (deg^2 per hour, converted to rad^2/s)                
 LC_KF_config.gyro_noise_PSD = (3 * deg_to_rad / 60)^2;
 % Accelerometer noise PSD (micro-g^2 per Hz, converted to m^2 s^-3)                
 LC_KF_config.accel_noise_PSD = (500 * mug_to_mps2)^2;
 % Accelerometer bias random walk PSD (m^2 s^-5)
-LC_KF_config.accel_bias_PSD = 1.6e-5;
+LC_KF_config.accel_bias_PSD = 1e-5;
 % Gyro bias random walk PSD (rad^2 s^-3)
-LC_KF_config.gyro_bias_PSD = 1.7e-8;
+LC_KF_config.gyro_bias_PSD = 1e-8;
 
 % Position measurement noise SD per axis (m)
 LC_KF_config.pos_meas_SD = 0.25;
@@ -146,12 +146,12 @@ LC_KF_config.pos_meas_SD = 0.25;
 LC_KF_config.vel_meas_SD = 0.3;
 % Initial estimate of accelerometer and gyro static bias
 est_IMU_bias = [
-   0.117779262454384
-   0.286910957742419
-   0.490716244754052
-  -0.026455615306335
-   0.001721479262813
-  -0.012012004403584];
+   0.131676394247247
+   0.283587975514357
+  -0.015093697678881
+  -0.026730355596929
+   0.001304349742614
+  -0.011431303631989];
 % number of measurements to use for innovation adaptive estimation
 % LC_KF_config.n = 470;
 LC_KF_config.n = Inf;
@@ -160,7 +160,7 @@ LC_KF_config.n = Inf;
 RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
 %% Format initial conditions
 % x y z vx vy vz r p y
-init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-27.551) deg2rad(-18.9796) deg2rad(-84.4898)];
+init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-40) deg2rad(-8.5) deg2rad(-125)];
 % init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-5.8461) deg2rad(7.27135) deg2rad(178.782)];
 
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

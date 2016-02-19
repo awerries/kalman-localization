@@ -3,7 +3,7 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 30;
+k_max = 40;
 % Specify ranges
 init_att_unc = linspace(0.5,10,50);
 init_vel_unc = linspace(0.5,20,50);

@@ -112,7 +112,6 @@ end % for i
 % R_matrix(1:3,4:6) = zeros(3);
 % R_matrix(4:6,1:3) = zeros(3);
 % R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
-disp(gps(1,7:9))
 R_matrix(1:3,1:3) = diag(gps(1,7:9));
 R_matrix(1:3,4:6) = zeros(3);
 R_matrix(4:6,1:3) = zeros(3);
