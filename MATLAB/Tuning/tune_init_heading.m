@@ -6,11 +6,11 @@
 %
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 40;
+k_max = 50;
 % Specify ranges
-roll = linspace(-45,45,60);
-pitch = linspace(-45,45,60);
-yaw = linspace(-180,180,60);
+roll = linspace(-180,180,100);
+pitch = linspace(-180,180,100);
+yaw = linspace(-180,180,100);
 % Repeat arrays
 roll = repmat(roll, [1 k_max]);
 pitch = repmat(pitch, [1 k_max]);

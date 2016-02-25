@@ -136,3 +136,45 @@ ylabel('Altitude error (m)');
 ylim([-10 10]);
 legend('Filter','Novatel');
 plot(filter_time, zero_line, '--b');
+
+figurec;
+subplot(311);
+plot(nov_time, out_KF_SD(:,2),'b');
+hold on;
+plot(nov_time, out_KF_SD(:,3),'r');
+hold on;
+plot(nov_time, out_KF_SD(:,4),'g');
+title('Attitude Uncertainty P');
+
+subplot(312);
+plot(nov_time, out_KF_SD(:,5),'b');
+hold on;
+plot(nov_time, out_KF_SD(:,6),'r');
+hold on;
+plot(nov_time, out_KF_SD(:,7),'g');
+title('Velocity Uncertainty P');
+
+subplot(313);
+plot(nov_time, out_KF_SD(:,8),'b');
+hold on;
+plot(nov_time, out_KF_SD(:,9),'r');
+hold on;
+plot(nov_time, out_KF_SD(:,10),'g');
+title('Position Uncertainty P');
+
+figurec;
+subplot(211);
+plot(nov_time, out_KF_SD(:,11),'b');
+hold on;
+plot(nov_time, out_KF_SD(:,12),'r');
+hold on;
+plot(nov_time, out_KF_SD(:,13),'g');
+title('Accel Bias Uncertainty P');
+
+subplot(212);
+plot(nov_time, out_KF_SD(:,14),'b');
+hold on;
+plot(nov_time, out_KF_SD(:,15),'r');
+hold on;
+plot(nov_time, out_KF_SD(:,16),'g');
+title('Gyro Bias Uncertainty P');
