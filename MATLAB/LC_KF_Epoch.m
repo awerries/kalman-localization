@@ -78,14 +78,14 @@ Q_prime_matrix(1:3,1:3) = eye(3) * LC_KF_config.gyro_noise_PSD * tor_s;
 Q_prime_matrix(4:6,4:6) = eye(3) * LC_KF_config.accel_noise_PSD * tor_s;
 Q_prime_matrix(10:12,10:12) = eye(3) * LC_KF_config.accel_bias_PSD * tor_s;
 Q_prime_matrix(13:15,13:15) = eye(3) * LC_KF_config.gyro_bias_PSD * tor_s;
-
+Q_prime_matrix = nearestSPD(Q_prime_matrix);
 % 3. Propagate state estimates using (3.14) noting that all states are zero 
 % due to closed-loop correction.
 x_est_propagated(1:15,1) = 0;
 
 % 4. Propagate state estimation error covariance matrix using (3.46)
-P_matrix_propagated = Phi_matrix * (P_matrix_old + 0.5 * Q_prime_matrix) *...
-    Phi_matrix' + 0.5 * Q_prime_matrix;
+P_matrix_propagated = nearestSPD(Phi_matrix * (P_matrix_old + 0.5 * Q_prime_matrix) *...
+    Phi_matrix' + 0.5 * Q_prime_matrix);
 
 % MEASUREMENT UPDATE PHASE
        
@@ -96,11 +96,6 @@ H_matrix(4:6,4:6) = -eye(3);
 
 % 6. Set-up measurement noise covariance matrix assuming all components of
 % GNSS position and velocity are independent and have equal variance.
-%% NOW INITIALIZED BEFORE FILTER, ADAPTED AFTER (WERRIES)
-% R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
-% R_matrix(1:3,4:6) = zeros(3);
-% R_matrix(4:6,1:3) = zeros(3);
-% R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
 
 % 7. Calculate Kalman gain using (3.21)
 K_matrix = P_matrix_propagated * H_matrix' / (H_matrix * P_matrix_propagated * H_matrix' + R_matrix);
@@ -120,7 +115,7 @@ residual = delta_z; % Addition (Werries)
 P_matrix_new = (eye(15) - K_matrix * H_matrix) * P_matrix_propagated;
 % More "stable" update equation, higher computational cost
 factor = (eye(15) - K_matrix * H_matrix);
-P_matrix_new = factor * P_matrix_propagated * factor' + K_matrix*R_matrix*K_matrix';
+P_matrix_new = nearestSPD(factor * P_matrix_propagated * factor' + K_matrix*R_matrix*K_matrix');
 
 % CLOSED-LOOP CORRECTION
 
