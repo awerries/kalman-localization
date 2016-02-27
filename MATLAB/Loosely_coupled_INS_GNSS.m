@@ -84,6 +84,7 @@ est_L_b = old_est_L_b;
 % old_est_C_b_n = Initialize_NED_attitude(true_C_b_n,initialization_errors);
 old_est_C_b_n = Euler_to_CTM(init_cond(7:9));
 [~,~,old_est_C_b_e] = NED_to_ECEF(old_est_L_b,old_est_lambda_b,old_est_h_b,old_est_v_eb_n,old_est_C_b_n);
+old_est_r_eb_e = old_est_r_eb_e - old_est_C_b_e*LC_KF_config.lever_arm;
 
 % Initialize output profile record and errors record
 out_profile = zeros(length(filter_time),10);
@@ -112,13 +113,13 @@ end % for i
 % R_matrix(1:3,4:6) = zeros(3);
 % R_matrix(4:6,1:3) = zeros(3);
 % R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
-R_matrix(1:3,1:3) = diag(gps(1,7:9));
+R_matrix(1:3,1:3) = diag(gps(1,7:9).^2);
 R_matrix(1:3,4:6) = zeros(3);
 R_matrix(4:6,1:3) = zeros(3);
-R_matrix(4:6,4:6) = diag(gps(1,13:15));
+R_matrix(4:6,4:6) = diag(gps(1,13:15).^2);
 
 % Main loop
-GNSS_epoch = 1;
+GNSS_epoch = 2;
 last_GNSS_epoch = GNSS_epoch;
 residuals = zeros(6,1);
 last_imu_index = 1;
@@ -144,13 +145,17 @@ for i = 2:length(filter_time)
         GNSS_r_eb_e = gps(GNSS_epoch,4:6)';
         GNSS_v_eb_e = gps(GNSS_epoch,10:12)';
         est_L_b = lla(GNSS_epoch,1);
-        R_matrix(1:3,1:3) = diag(gps(GNSS_epoch,7:9));
-        R_matrix(4:6,4:6) = diag(gps(GNSS_epoch,13:15));
+        R_matrix(1:3,1:3) = diag(gps(GNSS_epoch,7:9).^2);
+        R_matrix(4:6,4:6) = diag(gps(GNSS_epoch,13:15).^2);
         % Run Integration Kalman filter
         [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,residuals(:,end+1), H_matrix] =...
             LC_KF_Epoch(GNSS_r_eb_e,GNSS_v_eb_e,tor_s,est_C_b_e,...
             est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,meas_f_ib_b,...
             est_L_b,LC_KF_config,R_matrix,meas_omega_ib_b);
+        if any(any(isnan(P_matrix))) || any(any(isinf(P_matrix)))
+            disp('Filter instability detected. Time to kick the bucket.');
+            return
+        end
 
         % Run adaptive algorithm
         [R_matrix] = adapt_noise_covariance(H_matrix, P_matrix, R_matrix, LC_KF_config.n, residuals);

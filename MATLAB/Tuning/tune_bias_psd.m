@@ -3,10 +3,10 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 40;
+k_max = 30;
 % Specify ranges
-accel_bias_PSD = logspace(-8,-5,40);
-gyro_bias_PSD = logspace(-8,-5,40);
+accel_bias_PSD = logspace(-8,-3,30);
+gyro_bias_PSD = logspace(-8,-3,30);
 % Repeat arrays
 accel_bias_PSD = repmat(accel_bias_PSD, [1 k_max]);
 gyro_bias_PSD = repmat(gyro_bias_PSD, [1 k_max]);

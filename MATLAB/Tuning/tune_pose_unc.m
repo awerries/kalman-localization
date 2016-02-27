@@ -5,9 +5,9 @@
 
 k_max = 40;
 % Specify ranges
-init_att_unc = linspace(0.001,3,60);
-init_vel_unc = linspace(0.001,3,60);
-init_pos_unc = linspace(0.001,3,60);
+init_att_unc = linspace(0.001,10,40);
+init_vel_unc = linspace(0.001,10,40);
+init_pos_unc = linspace(0.001,40,40);
 % Repeat arrays
 init_att_unc = repmat(init_att_unc, [1 k_max]);
 init_vel_unc = repmat(init_vel_unc, [1 k_max]);

@@ -1,57 +1,57 @@
-% %% Raw IMU data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% figurec;
-% subplot(311);
-% plot(imu_time, imu(:,2), '.');
-% xlabel('Time (s)'); ylabel('X Acceleration (m/s^2)');
-% subplot(312);
-% plot(imu_time, imu(:,3), '.');
-% xlabel('Time (s)'); ylabel('Y Acceleration (m/s^2)');
-% subplot(313);
-% plot(imu_time, imu(:,4), '.');
-% xlabel('Time (s)'); ylabel('Z Acceleration (m/s^2)');
-% 
-% figurec;
-% subplot(311);
-% plot(imu_time, imu(:,5), '.');
-% xlabel('Time (s)'); ylabel('Roll rate (rad/s)');
-% subplot(312);
-% plot(imu_time, imu(:,6), '.');
-% xlabel('Time (s)'); ylabel('Pitch rate (rad/s)');
-% subplot(313);
-% plot(imu_time, imu(:,7), '.');
-% xlabel('Time (s)'); ylabel('Yaw rate (rad/s)');
+%% Raw IMU data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figurec;
+subplot(311);
+plot(imu_time, imu(:,2), '.');
+xlabel('Time (s)'); ylabel('X Acceleration (m/s^2)');
+subplot(312);
+plot(imu_time, imu(:,3), '.');
+xlabel('Time (s)'); ylabel('Y Acceleration (m/s^2)');
+subplot(313);
+plot(imu_time, imu(:,4), '.');
+xlabel('Time (s)'); ylabel('Z Acceleration (m/s^2)');
 
-% %% Compare ground truth to raw NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% figurec;
-% plot(gps_x, gps_y,'r--', 'LineWidth', 2);
-% xlabel('Easting (m)');
-% ylabel('Northing (m)');
-% hold on;
-% plot(ground_truth(:,1),ground_truth(:,2),'c');
-% legend('NovAtel','Applanix');
-% axis equal;
-% 
-% figurec;
-% subplot(311);
-% plot(nov_time, gps_x,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Easting (m)');
-% hold on; plot(nov_time, ground_truth(:,1),'c');
-% legend('NovAtel','Applanix');
-% 
-% subplot(312);
-% plot(nov_time, gps_y,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Northing (m)');
-% hold on; plot(nov_time, ground_truth(:,2),'c');
-% legend('NovAtel','Applanix','Location','SouthEast');
-% 
-% subplot(313);
-% plot(nov_time, gps_h,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Northing (m)');
-% hold on; plot(nov_time, ground_truth(:,3),'c');
-% legend('NovAtel','Applanix','Location','SouthEast');
+figurec;
+subplot(311);
+plot(imu_time, imu(:,5), '.');
+xlabel('Time (s)'); ylabel('Roll rate (rad/s)');
+subplot(312);
+plot(imu_time, imu(:,6), '.');
+xlabel('Time (s)'); ylabel('Pitch rate (rad/s)');
+subplot(313);
+plot(imu_time, imu(:,7), '.');
+xlabel('Time (s)'); ylabel('Yaw rate (rad/s)');
+
+%% Compare ground truth to raw NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figurec;
+plot(gps_x, gps_y,'r--', 'LineWidth', 2);
+xlabel('Easting (m)');
+ylabel('Northing (m)');
+hold on;
+plot(ground_truth(:,1),ground_truth(:,2),'c');
+legend('NovAtel','Applanix');
+axis equal;
+
+figurec;
+subplot(311);
+plot(nov_time, gps_x,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Easting (m)');
+hold on; plot(nov_time, ground_truth(:,1),'c');
+legend('NovAtel','Applanix');
+
+subplot(312);
+plot(nov_time, gps_y,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Northing (m)');
+hold on; plot(nov_time, ground_truth(:,2),'c');
+legend('NovAtel','Applanix','Location','SouthEast');
+
+subplot(313);
+plot(nov_time, gps_h,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Northing (m)');
+hold on; plot(nov_time, ground_truth(:,3),'c');
+legend('NovAtel','Applanix','Location','SouthEast');
 
 %% Plot filter results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 roll = out_profile(:,8);
@@ -139,11 +139,11 @@ plot(filter_time, zero_line, '--b');
 
 figurec;
 subplot(311);
-plot(nov_time, out_KF_SD(:,2),'b');
+plot(nov_time, rad2deg(out_KF_SD(:,2)),'b');
 hold on;
-plot(nov_time, out_KF_SD(:,3),'r');
+plot(nov_time, rad2deg(out_KF_SD(:,3)),'r');
 hold on;
-plot(nov_time, out_KF_SD(:,4),'g');
+plot(nov_time, rad2deg(out_KF_SD(:,4)),'g');
 title('Attitude Uncertainty P');
 
 subplot(312);
@@ -164,17 +164,17 @@ title('Position Uncertainty P');
 
 figurec;
 subplot(211);
-plot(nov_time, out_KF_SD(:,11),'b');
+plot(nov_time, out_KF_SD(:,11)/mug_to_mps2,'b');
 hold on;
-plot(nov_time, out_KF_SD(:,12),'r');
+plot(nov_time, out_KF_SD(:,12)/mug_to_mps2,'r');
 hold on;
-plot(nov_time, out_KF_SD(:,13),'g');
+plot(nov_time, out_KF_SD(:,13)/mug_to_mps2,'g');
 title('Accel Bias Uncertainty P');
 
 subplot(212);
-plot(nov_time, out_KF_SD(:,14),'b');
+plot(nov_time, out_KF_SD(:,14) / deg_to_rad * 3600,'b');
 hold on;
-plot(nov_time, out_KF_SD(:,15),'r');
+plot(nov_time, out_KF_SD(:,15) / deg_to_rad * 3600,'r');
 hold on;
-plot(nov_time, out_KF_SD(:,16),'g');
+plot(nov_time, out_KF_SD(:,16) / deg_to_rad * 3600,'g');
 title('Gyro Bias Uncertainty P');

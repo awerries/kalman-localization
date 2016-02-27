@@ -37,6 +37,10 @@ B = (A + A')/2;
 
 % Compute the symmetric polar factor of B. Call it H.
 % Clearly H is itself SPD.
+if any(any(isnan(B))) || any(any(isinf(B)))
+    Ahat = A;
+    return
+end
 [U,Sigma,V] = svd(B);
 H = V*Sigma*V';
 
