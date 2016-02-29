@@ -3,10 +3,10 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 40;
+k_max = 50;
 % Specify ranges
-accel_noise_PSD = linspace(1,1000,50);
-gyro_noise_PSD = linspace(0.5,20,50);
+accel_noise_PSD = logspace(-8, 5, 60);
+gyro_noise_PSD = logspace(-8, 5, 60);
 % Repeat arrays
 accel_noise_PSD = repmat(accel_noise_PSD, [1 k_max]);
 gyro_noise_PSD = repmat(gyro_noise_PSD, [1 k_max]);
@@ -41,4 +41,7 @@ fprintf('\nBest max: %08.4f, rms is %08.4f\n', minmax, rms_error_filter(i));
 fprintf('Best iteration for max: %d, ANoise: %08.5e, GNoise: %08.5e\n', i, accel_noise_PSD(accel_i(i)), gyro_noise_PSD(gyro_i(i)));
 [minrms, i] = min(rms_error_filter);
 fprintf('Best rms: %08.4f, max is %08.4f\n', minrms, max_error_filter(i));
+fprintf('Best iteration for rms: %d, ANoise: %08.5e, GNoise: %08.5e\n', i, accel_noise_PSD(accel_i(i)), gyro_noise_PSD(gyro_i(i)));
+[minrms, i] = min((rms_error_filter+max_error_filter)/2);
+fprintf('Best average of RMS and max: %08.4f, rms is  %08.4f, max is %08.4f\n', minrms, rms_error_filter(i), max_error_filter(i));
 fprintf('Best iteration for rms: %d, ANoise: %08.5e, GNoise: %08.5e\n', i, accel_noise_PSD(accel_i(i)), gyro_noise_PSD(gyro_i(i)));

@@ -1,7 +1,9 @@
 function [est_C_b_e_new,est_v_eb_e_new,est_r_eb_e_new,est_IMU_bias_new,...
-            P_matrix_new, residual, H_matrix] = LC_KF_Epoch(GNSS_r_eb_e,GNSS_v_eb_e,tor_s,...
-            est_C_b_e_old,est_v_eb_e_old,est_r_eb_e_old,est_IMU_bias_old,...
-            P_matrix_old,meas_f_ib_b,est_L_b_old,LC_KF_config,R_matrix,meas_omega_ib_b)
+            P_matrix_new, x_est_new, Phi_matrix, Q_matrix] = ...
+         LC_KF_Epoch(GNSS_epoch, GNSS_r_eb_e,GNSS_v_eb_e,tor_s, est_C_b_e_old,...
+                     est_v_eb_e_old,est_r_eb_e_old,est_IMU_bias_old,...
+                     P_matrix_old,meas_f_ib_b,est_L_b_old,LC_KF_config,...
+                     Q_matrix, R_matrix, meas_omega_ib_b)
 %LC_KF_Epoch - Implements one cycle of the loosely coupled INS/GNSS
 % Kalman filter plus closed-loop correction of all inertial states
 %
@@ -74,45 +76,44 @@ Phi_matrix(4:6,7:9) = -tor_s * 2 * Gravity_ECEF(est_r_eb_e_old) /...
 Phi_matrix(4:6,10:12) = est_C_b_e_old * tor_s;
 Phi_matrix(7:9,4:6) = eye(3) * tor_s;
 
-% 2. Determine approximate system noise covariance matrix using (14.82)
-Srg = LC_KF_config.gyro_noise_PSD;
-Sra = LC_KF_config.accel_noise_PSD;
-Sbad = LC_KF_config.accel_bias_PSD;
-Sbgd = LC_KF_config.gyro_bias_PSD;
-Q11 = eye(3) * (Srg * tor_s + Sbgd*tor_s^3/3);
-Q21 = (Srg*tor_s^2 / 2 + Sbgd*tor_s^4 / 4) * F_21;
-Q31 = (Srg*tor_s^3 / 3 + Sbgd*tor_s^5 / 5) * F_21;
-Q15 = Sbgd*tor_s^2*est_C_b_e_old / 2;
-Q22 = (Sra*tor_s + Sbad*tor_s^3/3)*eye(3) + (Srg*tor_s^3/3 + Sbgd*tor_s^5/5)*(F_21*F_21');
-Q32 = (Sra*tor_s^2/2 + Sbad*tor_s^4/4)*eye(3) + (Srg*tor_s^4/4 + Sbgd*tor_s^6/6)*(F_21*F_21');
-Q24 = Sbad*tor_s^2*est_C_b_e_old / 2;
-Q25 = Sbgd*tor_s^3*F_21*est_C_b_e_old / 3;
-Q33 = (Sra*tor_s^3/3 + Sbad*tor_s^5/5)*eye(3) + (Srg*tor_s^5/5 + Sbgd*tor_s^7/7)*(F_21*F_21');
-Q34 = Sbad*tor_s^3*est_C_b_e_old/3;
-Q35 = Sbgd*tor_s^4*F_21*est_C_b_e_old/4;
-Q44 = Sbad*tor_s*eye(3);
-Q55 = Sbgd*tor_s*eye(3);
-
-Q_matrix = [Q11      Q21' Q31' zeros(3) Q15;
-            Q21      Q22  Q32' Q24      Q25;
-            Q31      Q32  Q33  Q34      Q35;
-            zeros(3) Q24' Q34' Q44      zeros(3);
-            Q15'     Q25' Q35' zeros(3) Q55;];
-Q_matrix = Q_matrix;
-[~,p] = chol(Q_matrix);
-if p ~= 0
-    Q_matrix = nearestSPD(Q_matrix);
+% If we were supposed to adapt Q_matrix last iteration, don't replace it.
+if GNSS_epoch <= LC_KF_config.n + 1
+    % 2. Determine approximate system noise covariance matrix using (14.82)
+    Srg = LC_KF_config.gyro_noise_PSD;
+    Sra = LC_KF_config.accel_noise_PSD;
+    Sbad = LC_KF_config.accel_bias_PSD;
+    Sbgd = LC_KF_config.gyro_bias_PSD;
+    Q11 = eye(3) * (Srg * tor_s + Sbgd*tor_s^3/3);
+    Q21 = (Srg*tor_s^2 / 2 + Sbgd*tor_s^4 / 4) * F_21;
+    Q31 = (Srg*tor_s^3 / 3 + Sbgd*tor_s^5 / 5) * F_21;
+    Q15 = Sbgd*tor_s^2*est_C_b_e_old / 2;
+    Q22 = (Sra*tor_s + Sbad*tor_s^3/3)*eye(3) + (Srg*tor_s^3/3 + Sbgd*tor_s^5/5)*(F_21*F_21');
+    Q32 = (Sra*tor_s^2/2 + Sbad*tor_s^4/4)*eye(3) + (Srg*tor_s^4/4 + Sbgd*tor_s^6/6)*(F_21*F_21');
+    Q24 = Sbad*tor_s^2*est_C_b_e_old / 2;
+    Q25 = Sbgd*tor_s^3*F_21*est_C_b_e_old / 3;
+    Q33 = (Sra*tor_s^3/3 + Sbad*tor_s^5/5)*eye(3) + (Srg*tor_s^5/5 + Sbgd*tor_s^7/7)*(F_21*F_21');
+    Q34 = Sbad*tor_s^3*est_C_b_e_old/3;
+    Q35 = Sbgd*tor_s^4*F_21*est_C_b_e_old/4;
+    Q44 = Sbad*tor_s*eye(3);
+    Q55 = Sbgd*tor_s*eye(3);
+    Q_matrix = [Q11      Q21' Q31' zeros(3) Q15;
+                Q21      Q22  Q32' Q24      Q25;
+                Q31      Q32  Q33  Q34      Q35;
+                zeros(3) Q24' Q34' Q44      zeros(3);
+                Q15'     Q25' Q35' zeros(3) Q55;];
+else
+    Q_matrix = tor_s*Q_matrix;
 end
+% [~,p] = chol(Q_matrix);
+% if p ~= 0
+%     Q_matrix = nearestSPD(Q_matrix);
+% end
 % 3. Propagate state estimates using (3.14) noting that all states are zero 
 % due to closed-loop correction.
 x_est_propagated(1:15,1) = 0;
 
 % 4. Propagate state estimation error covariance matrix using (3.46)
 P_matrix_propagated = Phi_matrix * P_matrix_old * Phi_matrix' + Q_matrix;
-[~,p] = chol(P_matrix_propagated);
-if p ~= 0
-    P_matrix_propagated = nearestSPD(P_matrix_propagated);
-end
 
 % MEASUREMENT UPDATE PHASE
 % 5. Set-up measurement matrix using (14.115)
@@ -132,21 +133,16 @@ K_matrix = P_matrix_propagated * H_matrix' / (H_matrix * P_matrix_propagated * H
 
 % 8. Formulate measurement innovations using (14.102)
 % Lever arm from INS to GPS
-delta_z(1:3,1) = GNSS_r_eb_e - est_r_eb_e_old - est_C_b_e_old*Lab;
+delta_z(1:3,1) = GNSS_r_eb_e - est_r_eb_e_old - est_C_b_e_old*Lab - est_C_b_e_old*LC_KF_config.gps_correction;
 delta_z(4:6,1) = GNSS_v_eb_e - est_v_eb_e_old ...
                   - est_C_b_e_old*cross(meas_omega_ib_b,Lab) ...
                   + Omega_ie*est_C_b_e_old*Lab;
 
 % 9. Update state estimates using (3.24)
 x_est_new = x_est_propagated + K_matrix * delta_z;
-residual = delta_z; % Addition (Werries)
-
 
 % 10. Update state estimation error covariance matrix using (3.25)
 P_matrix_new = (eye(15) - K_matrix * H_matrix) * P_matrix_propagated;
-% % More "stable" update equation, higher computational cost
-% factor = (eye(15) - K_matrix * H_matrix);
-% P_matrix_new = nearestSPD(factor * P_matrix_propagated * factor' + K_matrix*R_matrix*K_matrix');
 [~,p] = chol(P_matrix_new);
 if p ~= 0
     P_matrix_new = nearestSPD(P_matrix_new);

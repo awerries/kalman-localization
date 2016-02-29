@@ -56,6 +56,10 @@ k = 0;
 while p ~= 0
   [R,p] = chol(Ahat);
   k = k + 1;
+  if k > 1e4
+    disp('nearestSPD: Ahat is not becoming PD for some reason.');
+    return
+  end
   if p ~= 0
     % Ahat failed the chol test. It must have been just a hair off,
     % due to floating point trash, so it is simplest now just to

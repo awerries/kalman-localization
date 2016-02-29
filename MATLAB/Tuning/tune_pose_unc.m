@@ -3,11 +3,11 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 40;
+k_max = 50;
 % Specify ranges
-init_att_unc = linspace(0.001,10,40);
-init_vel_unc = linspace(0.001,10,40);
-init_pos_unc = linspace(0.001,40,40);
+init_att_unc = linspace(0.1,10,20);
+init_vel_unc = linspace(0.1,20,20);
+init_pos_unc = linspace(0.1,40,20);
 % Repeat arrays
 init_att_unc = repmat(init_att_unc, [1 k_max]);
 init_vel_unc = repmat(init_vel_unc, [1 k_max]);

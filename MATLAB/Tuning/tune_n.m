@@ -4,7 +4,7 @@
 % Adam Werries 2016, see Apache 2.0 license.
 
 % Specify ranges
-n = 300:10:1200;
+n = 10:40:1480;
 num_items = length(n);
 rms_error_filter = Inf*ones(1,num_items);
 max_error_filter = Inf*ones(1,num_items);
@@ -21,7 +21,6 @@ parfor i = 1:num_items
         y = y-min_y;
         
         distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
-        
         rms_error_filter(i) = rms(distance);
         max_error_filter(i) = max(distance);
         fprintf('Iteration: %d, n: %d, rms: %08.5f, max:  %08.5f\n', i, n(i), rms_error_filter(i),max_error_filter(i));

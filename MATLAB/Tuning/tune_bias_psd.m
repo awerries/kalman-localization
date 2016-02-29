@@ -3,10 +3,10 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 30;
+k_max = 50;
 % Specify ranges
-accel_bias_PSD = logspace(-8,-3,30);
-gyro_bias_PSD = logspace(-8,-3,30);
+accel_bias_PSD = logspace(-8,-2,40);
+gyro_bias_PSD = logspace(-8,-2,40);
 % Repeat arrays
 accel_bias_PSD = repmat(accel_bias_PSD, [1 k_max]);
 gyro_bias_PSD = repmat(gyro_bias_PSD, [1 k_max]);
@@ -29,8 +29,8 @@ parfor i = 1:num_items
         [x,y] = deg2utm(llh(:,1),llh(:,2));
         x = x-min_x;
         y = y-min_y;
-        
-        distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
+        h = -llh(:,3);
+        distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2 + (ground_truth_full(:,3)-h).^2).^0.5;
         rms_error_filter(i) = rms(distance);
         max_error_filter(i) = max(distance);
     end
@@ -41,4 +41,7 @@ fprintf('\nBest max: %08.4f, rms is %08.4f\n', minmax, rms_error_filter(i));
 fprintf('Best iteration for max: %d, ABias: %08.5e, GBias: %08.5e\n', i, accel_bias_PSD(accel_bias_i(i)), gyro_bias_PSD(gyro_bias_i(i)));
 [minrms, i] = min(rms_error_filter);
 fprintf('Best rms: %08.4f, max is %08.4f\n', minrms, max_error_filter(i));
+fprintf('Best iteration for rms: %d, ABias: %08.5e, GBias: %08.5e\n', i, accel_bias_PSD(accel_bias_i(i)), gyro_bias_PSD(gyro_bias_i(i)));
+[minrms, i] = min((rms_error_filter+max_error_filter)/2);
+fprintf('Best average of RMS and max: %08.4f, rms is  %08.4f, max is %08.4f\n', minrms, rms_error_filter(i), max_error_filter(i));
 fprintf('Best iteration for rms: %d, ABias: %08.5e, GBias: %08.5e\n', i, accel_bias_PSD(accel_bias_i(i)), gyro_bias_PSD(gyro_bias_i(i)));
