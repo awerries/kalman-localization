@@ -3,11 +3,11 @@
 % Works sorta like RANSAC I guess?
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 30;
+k_max = 50;
 % Specify ranges
-init_att_unc = linspace(0.5,10,50);
-init_vel_unc = linspace(0.5,20,50);
-init_pos_unc = linspace(0.5,20,50);
+init_att_unc = linspace(0.01,10,40);
+init_vel_unc = linspace(0.01,5,40);
+init_pos_unc = linspace(0.1,40,40);
 % Repeat arrays
 init_att_unc = repmat(init_att_unc, [1 k_max]);
 init_vel_unc = repmat(init_vel_unc, [1 k_max]);
@@ -43,3 +43,6 @@ fprintf('Best iteration for max: %d, AttUnc: %08.5f, VelUnc: %08.5f, PosUnc: %08
 [minrms, i] = min(rms_error_filter);
 fprintf('Best rms: %08.5f, max is %08.5f\n', minrms, max_error_filter(i));
 fprintf('Best iteration for rms: %d, AttUnc: %08.5f, VelUnc: %08.5f, PosUnc: %08.5f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));
+[minrms, i] = min((rms_error_filter+max_error_filter)/2);
+fprintf('Best average of RMS and max: %08.5f, rms is  %08.5f, max is %08.5f\n', minrms, rms_error_filter(i), max_error_filter(i));
+fprintf('Best iteration for average: %d, AttUnc: %08.5f, VelUnc: %08.5f, PosUnc: %08.5f\n', i, init_att_unc(att_i(i)), init_vel_unc(vel_i(i)), init_pos_unc(pos_i(i)));

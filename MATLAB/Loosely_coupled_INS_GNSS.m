@@ -1,4 +1,4 @@
-function [out_profile,out_IMU_bias_est,out_KF_SD,R_matrix,residuals] =...
+function [out_profile,out_IMU_bias_est,out_KF_SD,out_R_matrix,out_Q_matrix,corrections] =...
     Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, LC_KF_config, est_IMU_bias)
 %Loosely_coupled_INS_GNSS - Simulates inertial navigation using ECEF
 % navigation equations and kinematic model, GNSS using a least-squares
@@ -84,6 +84,7 @@ est_L_b = old_est_L_b;
 % old_est_C_b_n = Initialize_NED_attitude(true_C_b_n,initialization_errors);
 old_est_C_b_n = Euler_to_CTM(init_cond(7:9));
 [~,~,old_est_C_b_e] = NED_to_ECEF(old_est_L_b,old_est_lambda_b,old_est_h_b,old_est_v_eb_n,old_est_C_b_n);
+old_est_r_eb_e = old_est_r_eb_e + old_est_C_b_e*LC_KF_config.lever_arm + old_est_C_b_e*LC_KF_config.gps_correction;
 
 % Initialize output profile record and errors record
 out_profile = zeros(length(filter_time),10);
@@ -103,25 +104,40 @@ out_IMU_bias_est(1,2:7) = est_IMU_bias';
 
 % Generate KF uncertainty record
 out_KF_SD(1,1) = old_time;
-for i =1:15
-    out_KF_SD(1,i+1) = sqrt(P_matrix(i,i));
+for n = 1:15
+    out_KF_SD(1,n+1) = sqrt(P_matrix(n,n));
 end % for i
 
-% Initialize R (moved from within LC_KF_Epoch.m
-R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
+% % Initialize R (moved from within LC_KF_Epoch.m
+% R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
+% R_matrix(1:3,4:6) = zeros(3);
+% R_matrix(4:6,1:3) = zeros(3);
+% R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
+R_matrix(1:3,1:3) = diag(gps(1,7:9).^2*0.25);
 R_matrix(1:3,4:6) = zeros(3);
 R_matrix(4:6,1:3) = zeros(3);
-R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
-
+R_matrix(4:6,4:6) = diag(gps(1,13:15).^2*0.25);
+out_R_matrix = zeros(size(gps,1), 6);
+for n = 1:6
+    out_R_matrix(1,n) = R_matrix(n,n);
+end % for i
+out_Q_matrix = zeros(size(gps,1), 15);
+Q_matrix = zeros(15,15);
+for n = 1:15
+    out_Q_matrix(1,n) = Q_matrix(n,n);
+end % for i
 % Main loop
-GNSS_epoch = 1;
+GNSS_epoch = 2;
 last_GNSS_epoch = GNSS_epoch;
-residuals = zeros(6,1);
+corrections = zeros(15,size(gps,1)-1);
 last_imu_index = 1;
+numIMU = size(imu, 1);
+imu_index_windowsize = floor(20*epoch/mean(diff(imu(:,1))));
 for i = 2:length(filter_time)
     time = filter_time(i);
     % find range of imu measurements to use
-    indices = find(imu(last_imu_index+1:end,1) < time);
+    endcap = min(numIMU, last_imu_index+1 + imu_index_windowsize);
+    indices = find(imu(last_imu_index+1:endcap,1) < time);
     imu_range_end = last_imu_index + indices(end) - 1;
     % Apply IMU bias estimates
     meas_f_ib_b = mean(imu(last_imu_index+1:imu_range_end,2:4))' - est_IMU_bias(1:3);
@@ -135,21 +151,35 @@ for i = 2:length(filter_time)
 %         GNSS_epoch = GNSS_epoch + 1;
 %     end
     % Determine whether to update GNSS simulation and run Kalman filter
-    if GNSS_epoch < size(gps,1)+1 && time > gps(GNSS_epoch,1)
-        tor_s = time - gps(last_GNSS_epoch,1);  % KF time interval
+    if GNSS_epoch <= size(gps,1) && time > gps(GNSS_epoch,1)
+        tor_s = gps(GNSS_epoch,1) - gps(last_GNSS_epoch,1);  % KF time interval
         GNSS_r_eb_e = gps(GNSS_epoch,4:6)';
         GNSS_v_eb_e = gps(GNSS_epoch,10:12)';
         est_L_b = lla(GNSS_epoch,1);
+        % Use the GPS-reported standard deviation values, but clamping
+        % min/max values according to configuration
+        R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
+                                     min(LC_KF_config.pos_sd_max,...
+                                         gps(GNSS_epoch,7:9).^2*tor_s)));
+        R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
+                                     min(LC_KF_config.vel_sd_max,...
+                                         gps(GNSS_epoch,13:15).^2*tor_s)));
         
         % Run Integration Kalman filter
-        [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,residuals(:,end+1), H_matrix] =...
-            LC_KF_Epoch(GNSS_r_eb_e,GNSS_v_eb_e,tor_s,est_C_b_e,...
+        [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix_new,corrections(:,GNSS_epoch-1), Phi_matrix, Q_matrix] =...
+            LC_KF_Epoch(GNSS_epoch, GNSS_r_eb_e,GNSS_v_eb_e,tor_s,est_C_b_e,...
             est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix,meas_f_ib_b,...
-            est_L_b,LC_KF_config,R_matrix,meas_omega_ib_b);
+            est_L_b,LC_KF_config,Q_matrix,R_matrix,meas_omega_ib_b);
+        if any(any(isnan(P_matrix))) || any(any(isinf(P_matrix)))
+            disp('Filter instability detected. Time to kick the bucket.');
+            return
+        end
 
         % Run adaptive algorithm
-        [R_matrix] = adapt_noise_covariance(H_matrix, P_matrix, R_matrix, LC_KF_config.n, residuals);
-
+        [Q_matrix] = adapt_noise_covariance(Phi_matrix, P_matrix_new, P_matrix, Q_matrix, ...
+                                            LC_KF_config.n, GNSS_epoch, corrections);
+        P_matrix = P_matrix_new;
+        
         % Generate IMU bias and clock output records
         out_IMU_bias_est(GNSS_epoch,1) = time;
         out_IMU_bias_est(GNSS_epoch,2:7) = est_IMU_bias';
@@ -158,6 +188,12 @@ for i = 2:length(filter_time)
         out_KF_SD(GNSS_epoch,1) = time;
         for n = 1:15
             out_KF_SD(GNSS_epoch,n+1) = sqrt(P_matrix(n,n));
+        end % for i
+        for n = 1:6
+            out_R_matrix(GNSS_epoch,n) = R_matrix(n,n);
+        end % for i
+        for n = 1:15
+            out_Q_matrix(GNSS_epoch,n) = Q_matrix(n,n);
         end % for i
         last_GNSS_epoch = GNSS_epoch;
         GNSS_epoch = GNSS_epoch + 1;

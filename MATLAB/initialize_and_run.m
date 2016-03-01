@@ -1,4 +1,4 @@
-% Code to grab data, parse, adjust timing, run the filters, and plot 
+%% Code to grab data, parse, adjust timing, run the filters, and plot 
 % Adam Werries 2016, see Apache 2.0 license.
 close all;
 addpath('GrovesCode');
@@ -61,10 +61,11 @@ rotation = [1   0         0;
 imu(:,2:4) = (rotation*imu(:,2:4)')';
 imu(:,5:7) = (rotation*imu(:,5:7)')';
 %% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+timelag = 0;
 [start_time,Is] = max([min(nov_time),min(gt_t),min(imu(:,1))]);
 [end_time,Ie] = min([max(nov_time),max(gt_t),max(imu(:,1))]);
 end_time = end_time - start_time;
-gt_t = gt_t - start_time;
+gt_t = gt_t - start_time + timelag;
 nov_time = nov_time - start_time;
 imu(:,1) = imu(:,1) - start_time;
 % cut off extra novatel data at end, fold time back in
@@ -79,10 +80,11 @@ imu = imu(imu(:,1) > 0, :);
 imu_time = imu(:,1);
 
 %% Generate filter time, configurable epochs
-epoch = .015;
+epoch = 0.02;
 filter_time = 0:epoch:imu_time(end);
 
 %% Generate ground truth
+
 min_x = min([min(gps_x),min(gt_xyz(:,2))]);
 min_y = min([min(gps_y),min(gt_xyz(:,1))]);
 min_z = min([min(gps_h),min(gt_xyz(:,3))]);
@@ -120,53 +122,56 @@ mug_to_mps2 = 9.80665E-6;
 output_profile_name = 'Output_Profile.csv';
 
 % Initial attitude uncertainty per axis (deg, converted to rad)
-LC_KF_config.init_att_unc = degtorad(1.5);
+LC_KF_config.init_att_unc = degtorad(0.1);
 % Initial velocity uncertainty per axis (m/s)
 LC_KF_config.init_vel_unc = 0.5;
 % Initial position uncertainty per axis (m)
-LC_KF_config.init_pos_unc = 4;
-% Initial accelerometer bias uncertainty per instrument (micro-g, converted
+LC_KF_config.init_pos_unc = 1;
+% Initial accelerometer bias uncertainty (micro-g, converted
 % to m/s^2)
-LC_KF_config.init_b_a_unc = 1700 * mug_to_mps2;
-% Initial gyro bias uncertainty per instrument (deg/hour, converted to rad/sec)
-LC_KF_config.init_b_g_unc = 400 * deg_to_rad / 3600;
+LC_KF_config.init_b_a_unc = 2000 * mug_to_mps2;
+% Initial gyro bias uncertainty(deg/hour, converted to rad/sec)
+LC_KF_config.init_b_g_unc = 300 * deg_to_rad / 3600;
 
 % Gyro noise PSD (deg^2 per hour, converted to rad^2/s)                
-LC_KF_config.gyro_noise_PSD = (3 * deg_to_rad / 60)^2;
+LC_KF_config.gyro_noise_PSD = (2.55e-4 * deg_to_rad / 60)^2;
 % Accelerometer noise PSD (micro-g^2 per Hz, converted to m^2 s^-3)                
-LC_KF_config.accel_noise_PSD = (500 * mug_to_mps2)^2;
+LC_KF_config.accel_noise_PSD = (2.01e-5 * mug_to_mps2)^2;
 % Accelerometer bias random walk PSD (m^2 s^-5)
-LC_KF_config.accel_bias_PSD = 1.6e-5;
+LC_KF_config.accel_bias_PSD = 7e-3;
 % Gyro bias random walk PSD (rad^2 s^-3)
-LC_KF_config.gyro_bias_PSD = 1.7e-8;
-
-% Position measurement noise SD per axis (m)
-LC_KF_config.pos_meas_SD = 0.25;
-% Velocity measurement noise SD per axis (m/s)
-LC_KF_config.vel_meas_SD = 0.3;
+LC_KF_config.gyro_bias_PSD = 2.39e-8;
+% Lever arm from IMU to GPS
+LC_KF_config.lever_arm = [0.075; 0.256; 0.9209209];
+LC_KF_config.gps_correction = [0.7525; -0.1783567; -1.5190381];
+% Minimum and maximum R matrix values
+LC_KF_config.pos_sd_min = 0.414;
+LC_KF_config.pos_sd_max = 50;
+LC_KF_config.vel_sd_min = 2.02;
+LC_KF_config.vel_sd_max = 40;
 % Initial estimate of accelerometer and gyro static bias
 est_IMU_bias = [
-   0.117779262454384
-   0.286910957742419
-   0.490716244754052
-  -0.026455615306335
-   0.001721479262813
-  -0.012012004403584];
+   0.040292317647535
+   0.446488342470695
+   0.675616769225999
+  -0.028722707508602
+   0.000222641452690
+  -0.008717042968870];
 % number of measurements to use for innovation adaptive estimation
 % LC_KF_config.n = 470;
 LC_KF_config.n = Inf;
-% Seeding of the random number generator for reproducability. Change 
-% this value for a different random number sequence (may not work in Octave).
-RandStream.setGlobalStream(RandStream('mt19937ar','seed',1));
+
 %% Format initial conditions
 % x y z vx vy vz r p y
-init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-27.551) deg2rad(-18.9796) deg2rad(-84.4898)];
-% init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-5.8461) deg2rad(7.27135) deg2rad(178.782)];
+% init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-40) deg2rad(-8.5) deg2rad(-125)];
+init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-5.8461) deg2rad(7.27135) deg2rad(178.782)];
 
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('Beginning processing');
-[out_profile,out_IMU_bias_est,out_KF_SD, out_R_matrix, residuals] = ...
+% disp(LC_KF_config);
+[out_profile,out_IMU_bias_est,out_KF_SD, out_R_matrix, out_Q_matrix, corrections] = ...
     Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, est_IMU_bias);
 
 generate_error_metrics
 generate_plots
+mean(out_IMU_bias_est(:,2:end))'

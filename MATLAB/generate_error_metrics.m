@@ -12,7 +12,7 @@ llh = ecef2lla(xyz);
 [x,y] = deg2utm(llh(:,1),llh(:,2));
 x = x-min_x;
 y = y-min_y;
-h = -llh(:,3)+2;
+h = -llh(:,3);
 
 distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
 filter_rms = rms(distance);
