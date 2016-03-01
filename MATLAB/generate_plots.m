@@ -170,20 +170,20 @@ plot(skytraq_time, out_KF_SD(:,16) / deg_to_rad * 3600,'g');
 title('Gyro Bias Uncertainty P');
 legend('x', 'y', 'z');
 
-figurec;
-subplot(211);
-plot(skytraq_time, out_R_matrix(:,1), 'b'); hold on;
-plot(skytraq_time, out_R_matrix(:,2), 'r'); 
-plot(skytraq_time, out_R_matrix(:,3), 'b'); 
-title('R Position Noise Variance');
-legend('x','y','z');
-
-subplot(212);
-plot(skytraq_time, out_R_matrix(:,4), 'b'); hold on;
-plot(skytraq_time, out_R_matrix(:,5), 'r'); 
-plot(skytraq_time, out_R_matrix(:,6), 'b'); 
-title('R Velocity Noise Variance');
-legend('x','y','z');
+% figurec;
+% subplot(211);
+% plot(skytraq_time, out_R_matrix(:,1), 'b'); hold on;
+% plot(skytraq_time, out_R_matrix(:,2), 'r'); 
+% plot(skytraq_time, out_R_matrix(:,3), 'b'); 
+% title('R Position Noise Variance');
+% legend('x','y','z');
+% 
+% subplot(212);
+% plot(skytraq_time, out_R_matrix(:,4), 'b'); hold on;
+% plot(skytraq_time, out_R_matrix(:,5), 'r'); 
+% plot(skytraq_time, out_R_matrix(:,6), 'b'); 
+% title('R Velocity Noise Variance');
+% legend('x','y','z');
 
 % figurec;
 % subplot(231);

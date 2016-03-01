@@ -58,8 +58,8 @@ imu(:,2:4) = imu(:,2:4)*9.80097;
 rotation = [1   0         0;
             0   cosd(180) -sind(180)
             0   sind(180) cosd(180)];
-imu(:,2:4) = (rotation*imu(:,2:4)')';
-imu(:,5:7) = (rotation*imu(:,5:7)')';
+imu(:,2:4) = 0.5*(rotation*imu(:,2:4)')';
+imu(:,5:7) = 0.5*(rotation*imu(:,5:7)')';
 %% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 timelag = 0;
 [start_time,Is] = max([min(skytraq_time),min(gt_t),min(imu(:,1))]);
@@ -80,7 +80,7 @@ imu = imu(imu(:,1) > 0, :);
 imu_time = imu(:,1);
 
 %% Generate filter time, configurable epochs
-epoch = 0.02;
+epoch = 0.0495960;
 filter_time = 0:epoch:imu_time(end);
 
 %% Generate ground truth
@@ -122,11 +122,11 @@ mug_to_mps2 = 9.80665E-6;
 output_profile_name = 'Output_Profile.csv';
 
 % Initial attitude uncertainty per axis (deg, converted to rad)
-LC_KF_config.init_att_unc = degtorad(0.1);
+LC_KF_config.init_att_unc = degtorad(10);
 % Initial velocity uncertainty per axis (m/s)
-LC_KF_config.init_vel_unc = 0.5;
+LC_KF_config.init_vel_unc = 10;
 % Initial position uncertainty per axis (m)
-LC_KF_config.init_pos_unc = 1;
+LC_KF_config.init_pos_unc = 10;
 % Initial accelerometer bias uncertainty (micro-g, converted
 % to m/s^2)
 LC_KF_config.init_b_a_unc = 2000 * mug_to_mps2;
@@ -145,20 +145,20 @@ LC_KF_config.gyro_bias_PSD = 2.39e-8;
 LC_KF_config.lever_arm = [0.075; 0.256; 0.9209209];
 LC_KF_config.gps_correction = [0.7525; -0.1783567; -1.5190381];
 % Minimum and maximum R matrix values
-LC_KF_config.skytraq_pos_stddev = 2.5;
-LC_KF_config.skytraq_vel_stddev = 0.1;
-LC_KF_config.pos_sd_min = 0.414;
-LC_KF_config.pos_sd_max = 50;
-LC_KF_config.vel_sd_min = 2.02;
-LC_KF_config.vel_sd_max = 40;
+LC_KF_config.skytraq_pos_stddev = 3;
+LC_KF_config.skytraq_vel_stddev = 1;
+LC_KF_config.pos_sd_min = 1;
+LC_KF_config.pos_sd_max = 200;
+LC_KF_config.vel_sd_min = 0.5;
+LC_KF_config.vel_sd_max = 200;
 % Initial estimate of accelerometer and gyro static bias
 est_IMU_bias = [
-   0.040292317647535
-   0.446488342470695
-   0.675616769225999
-  -0.028722707508602
-   0.000222641452690
-  -0.008717042968870];
+   1.831124127077928
+  -0.699396774819039
+   0.899698542099496
+  -0.022450767774787
+  -0.000678103600978
+   0.006795270705312];
 % number of measurements to use for innovation adaptive estimation
 % LC_KF_config.n = 470;
 LC_KF_config.n = Inf;

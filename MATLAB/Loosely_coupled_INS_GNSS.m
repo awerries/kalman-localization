@@ -109,14 +109,17 @@ for n = 1:15
 end % for i
 
 % Initialize R (not really used but it makes me feel better
+pos_variance = LC_KF_config.skytraq_pos_stddev.^2*gps(1,16).^2.*ones(1,3);
+vel_variance = LC_KF_config.skytraq_vel_stddev.^2*gps(1,16).^2.*ones(1,3);
 R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
-                                     min(LC_KF_config.pos_sd_max,...
-                                         LC_KF_config.skytraq_pos_stddev.^2*gps(1,14).^2*0.25)));
+                         min(LC_KF_config.pos_sd_max,...
+                             pos_variance)));
 R_matrix(1:3,4:6) = zeros(3);
 R_matrix(4:6,1:3) = zeros(3);
 R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
-                                     min(LC_KF_config.vel_sd_max,...
-                                         LC_KF_config.skytraq_vel_stddev.^2*gps(1,14).^2*0.25)));
+                         min(LC_KF_config.vel_sd_max,...
+                         vel_variance)));
+
 out_R_matrix = zeros(size(gps,1), 6);
 for n = 1:6
     out_R_matrix(1,n) = R_matrix(n,n);
@@ -158,15 +161,16 @@ for i = 2:length(filter_time)
         est_L_b = lla(GNSS_epoch,1);
         % Use the GPS-reported standard deviation values, but clamping
         % min/max values according to configuration
-        pos_variance = LC_KF_config.skytraq_pos_stddev.^2*gps(GNSS_epoch,14).^2*ones(1,3);
-        vel_variance = LC_KF_config.skytraq_vel_stddev.^2*gps(GNSS_epoch,14).^2*ones(1,3);
-        R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
-                                     min(LC_KF_config.pos_sd_max,...
-                                         pos_variance*tor_s)));
-        R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
-                                     min(LC_KF_config.vel_sd_max,...
-                                         vel_variance*tor_s)));
-        disp(R_matrix)
+        pos_variance = LC_KF_config.skytraq_pos_stddev.^2*gps(GNSS_epoch,16).^2.*ones(1,3);
+        vel_variance = LC_KF_config.skytraq_vel_stddev.^2*gps(GNSS_epoch,16).^2.*ones(1,3);
+%         R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
+%                                      min(LC_KF_config.pos_sd_max,...
+%                                          pos_variance*tor_s)));
+%         R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
+%                                      min(LC_KF_config.vel_sd_max,...
+%                                          vel_variance*tor_s)));
+%         disp(size(R_matrix));
+%         disp(diag(R_matrix));
         
         % Run Integration Kalman filter
         [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix_new,corrections(:,GNSS_epoch-1), Phi_matrix, Q_matrix] =...
@@ -175,6 +179,8 @@ for i = 2:length(filter_time)
             est_L_b,LC_KF_config,Q_matrix,R_matrix,meas_omega_ib_b);
         if any(any(isnan(P_matrix))) || any(any(isinf(P_matrix)))
             disp('Filter instability detected. Time to kick the bucket.');
+            fprintf('Died on iteration %d/%d\n',i,length(filter_time));
+            fprintf('and GNSS epoch %d/%d\n',GNSS_epoch,size(gps,1));
             return
         end
 
