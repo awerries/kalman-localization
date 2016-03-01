@@ -24,22 +24,22 @@ gt_accel = gt(:,14:16);
 gt_xyz = gt(:,27:29);
 
 
-%% Import NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Format:  1     2                   3               4  5  6  7      8      
-%         time, sol good? (1 or 0), WAAS? (1 or 0), x, y, z, sig_x, sig_y
-%         9      10  11  12  13      14      15      16        17
-%         sig_z, vx, vy, vz, sig_vx, sig_vy, sig_vz, num_sats, sol_sats
+%% Import Skytraq data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Format:  1           2         3         4         5           6     7       8
+%         start_time, end_time, gps_time, fix_mode, num_sat,    lat,  long,   elev,
+%         9       10       11       12       13       14       15    16    17    18    19
+%         ecef_x, ecef_y,  ecef_z,  ecef_vx, ecef_vy, ecef_vz, gdop, pdop, hdop, vdop, tdop
 if ~exist('last_lowcost_dir', 'var') || ~ischar(last_lowcost_dir)
    last_lowcost_dir = last_applanix_dir; 
 end
-disp('Please select NovAtel log file')
-[novatel_file, novatel_path] = uigetfile(text_files, 'Select NovAtel Log File', last_lowcost_dir);
-last_lowcost_dir = novatel_path;
+disp('Please select Skytraq log file')
+[skytraq_file, skytraq_path] = uigetfile(text_files, 'Select Skytraq Log File', last_lowcost_dir);
+last_lowcost_dir = skytraq_path;
 
-novatel = csvread([novatel_path novatel_file]);
-nov_time = novatel(:,1);
-% Convert ECEF to lat-long-altitude
-lla = ecef2lla(novatel(:,4:6));
+skytraq = csvread([skytraq_path skytraq_file],1,0);
+skytraq_time = skytraq(:,1);
+% grab lat-long
+lla = skytraq(:,6:8);
 % Convert latlon to UTM
 [gps_x,gps_y,utmzone] = deg2utm(lla(:,1),lla(:,2));
 gps_h = -lla(:,3);
@@ -62,18 +62,18 @@ imu(:,2:4) = (rotation*imu(:,2:4)')';
 imu(:,5:7) = (rotation*imu(:,5:7)')';
 %% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 timelag = 0;
-[start_time,Is] = max([min(nov_time),min(gt_t),min(imu(:,1))]);
-[end_time,Ie] = min([max(nov_time),max(gt_t),max(imu(:,1))]);
+[start_time,Is] = max([min(skytraq_time),min(gt_t),min(imu(:,1))]);
+[end_time,Ie] = min([max(skytraq_time),max(gt_t),max(imu(:,1))]);
 end_time = end_time - start_time;
 gt_t = gt_t - start_time + timelag;
-nov_time = nov_time - start_time;
+skytraq_time = skytraq_time - start_time;
 imu(:,1) = imu(:,1) - start_time;
-% cut off extra novatel data at end, fold time back in
-nov_mask = nov_time < end_time & nov_time > 0;
-nov_time = nov_time(nov_mask);
-novatel = novatel(nov_mask,:);
-lla = lla(nov_mask,:);
-novatel(:,1) = nov_time;
+% cut off extra skytraq data at end, fold time back in
+sky_mask = skytraq_time < end_time & skytraq_time > 0;
+skytraq_time = skytraq_time(sky_mask);
+skytraq = skytraq(sky_mask,:);
+lla = lla(sky_mask,:);
+skytraq(:,1) = skytraq_time;
 % cut off extra IMU data at end
 imu = imu(imu(:,1) < end_time, :);
 imu = imu(imu(:,1) > 0, :);
@@ -88,18 +88,18 @@ filter_time = 0:epoch:imu_time(end);
 min_x = min([min(gps_x),min(gt_xyz(:,2))]);
 min_y = min([min(gps_y),min(gt_xyz(:,1))]);
 min_z = min([min(gps_h),min(gt_xyz(:,3))]);
-gps_x = gps_x(nov_mask) - min_x;
-gps_y = gps_y(nov_mask) - min_y;
-gps_h = gps_h(nov_mask);
-ground_truth = zeros(length(nov_time), 6);
+gps_x = gps_x(sky_mask) - min_x;
+gps_y = gps_y(sky_mask) - min_y;
+gps_h = gps_h(sky_mask);
+ground_truth = zeros(length(skytraq_time), 6);
 ground_truth_full = zeros(length(filter_time), 9);
 
-ground_truth(:,1) =  (interp1(gt_t,gt_xyz(:,2),nov_time)-min_x)';
-ground_truth(:,2) =  (interp1(gt_t,gt_xyz(:,1),nov_time)-min_y)';
-ground_truth(:,3) =  interp1(gt_t,gt_xyz(:,3),nov_time)';
-ground_truth(:,4) =  interp1(gt_t,gt_rot(:,1),nov_time)';
-ground_truth(:,5) =  interp1(gt_t,gt_rot(:,2),nov_time)';
-ground_truth(:,6) =  interp1(gt_t,gt_rot(:,3),nov_time)';
+ground_truth(:,1) =  (interp1(gt_t,gt_xyz(:,2),skytraq_time)-min_x)';
+ground_truth(:,2) =  (interp1(gt_t,gt_xyz(:,1),skytraq_time)-min_y)';
+ground_truth(:,3) =  interp1(gt_t,gt_xyz(:,3),skytraq_time)';
+ground_truth(:,4) =  interp1(gt_t,gt_rot(:,1),skytraq_time)';
+ground_truth(:,5) =  interp1(gt_t,gt_rot(:,2),skytraq_time)';
+ground_truth(:,6) =  interp1(gt_t,gt_rot(:,3),skytraq_time)';
 
 ground_truth_full(:,1) = (interp1(gt_t,gt_xyz(:,2),filter_time)-min_x)';
 ground_truth_full(:,2) = (interp1(gt_t,gt_xyz(:,1),filter_time)-min_y)';
@@ -145,6 +145,8 @@ LC_KF_config.gyro_bias_PSD = 2.39e-8;
 LC_KF_config.lever_arm = [0.075; 0.256; 0.9209209];
 LC_KF_config.gps_correction = [0.7525; -0.1783567; -1.5190381];
 % Minimum and maximum R matrix values
+LC_KF_config.skytraq_pos_stddev = 2.5;
+LC_KF_config.skytraq_vel_stddev = 0.1;
 LC_KF_config.pos_sd_min = 0.414;
 LC_KF_config.pos_sd_max = 50;
 LC_KF_config.vel_sd_min = 2.02;
@@ -163,14 +165,14 @@ LC_KF_config.n = Inf;
 
 %% Format initial conditions
 % x y z vx vy vz r p y
-% init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-40) deg2rad(-8.5) deg2rad(-125)];
-init_cond = [novatel(1,4:6) novatel(1,10:12) deg2rad(-5.8461) deg2rad(7.27135) deg2rad(178.782)];
+% init_cond = [skytraq(1,4:6) skytraq(1,10:12) deg2rad(-40) deg2rad(-8.5) deg2rad(-125)];
+init_cond = [skytraq(1,9:11) skytraq(1,12:14) deg2rad(-4.92) deg2rad(8.55) deg2rad(178.782)];
 
 %% Loosely coupled ECEF INS and GNSS integrated navigation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 disp('Beginning processing');
 % disp(LC_KF_config);
 [out_profile,out_IMU_bias_est,out_KF_SD, out_R_matrix, out_Q_matrix, corrections] = ...
-    Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, LC_KF_config, est_IMU_bias);
+    Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, skytraq, imu, LC_KF_config, est_IMU_bias);
 
 generate_error_metrics
 generate_plots

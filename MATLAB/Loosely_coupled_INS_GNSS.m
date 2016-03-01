@@ -108,15 +108,15 @@ for n = 1:15
     out_KF_SD(1,n+1) = sqrt(P_matrix(n,n));
 end % for i
 
-% % Initialize R (moved from within LC_KF_Epoch.m
-% R_matrix(1:3,1:3) = eye(3) * LC_KF_config.pos_meas_SD^2;
-% R_matrix(1:3,4:6) = zeros(3);
-% R_matrix(4:6,1:3) = zeros(3);
-% R_matrix(4:6,4:6) = eye(3) * LC_KF_config.vel_meas_SD^2;
-R_matrix(1:3,1:3) = diag(gps(1,7:9).^2*0.25);
+% Initialize R (not really used but it makes me feel better
+R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
+                                     min(LC_KF_config.pos_sd_max,...
+                                         LC_KF_config.skytraq_pos_stddev.^2*gps(1,14).^2*0.25)));
 R_matrix(1:3,4:6) = zeros(3);
 R_matrix(4:6,1:3) = zeros(3);
-R_matrix(4:6,4:6) = diag(gps(1,13:15).^2*0.25);
+R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
+                                     min(LC_KF_config.vel_sd_max,...
+                                         LC_KF_config.skytraq_vel_stddev.^2*gps(1,14).^2*0.25)));
 out_R_matrix = zeros(size(gps,1), 6);
 for n = 1:6
     out_R_matrix(1,n) = R_matrix(n,n);
@@ -153,17 +153,20 @@ for i = 2:length(filter_time)
     % Determine whether to update GNSS simulation and run Kalman filter
     if GNSS_epoch <= size(gps,1) && time > gps(GNSS_epoch,1)
         tor_s = gps(GNSS_epoch,1) - gps(last_GNSS_epoch,1);  % KF time interval
-        GNSS_r_eb_e = gps(GNSS_epoch,4:6)';
-        GNSS_v_eb_e = gps(GNSS_epoch,10:12)';
+        GNSS_r_eb_e = gps(GNSS_epoch,9:11)';
+        GNSS_v_eb_e = gps(GNSS_epoch,12:14)';
         est_L_b = lla(GNSS_epoch,1);
         % Use the GPS-reported standard deviation values, but clamping
         % min/max values according to configuration
+        pos_variance = LC_KF_config.skytraq_pos_stddev.^2*gps(GNSS_epoch,14).^2*ones(1,3);
+        vel_variance = LC_KF_config.skytraq_vel_stddev.^2*gps(GNSS_epoch,14).^2*ones(1,3);
         R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
                                      min(LC_KF_config.pos_sd_max,...
-                                         gps(GNSS_epoch,7:9).^2*tor_s)));
+                                         pos_variance*tor_s)));
         R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
                                      min(LC_KF_config.vel_sd_max,...
-                                         gps(GNSS_epoch,13:15).^2*tor_s)));
+                                         vel_variance*tor_s)));
+        disp(R_matrix)
         
         % Run Integration Kalman filter
         [est_C_b_e,est_v_eb_e,est_r_eb_e,est_IMU_bias,P_matrix_new,corrections(:,GNSS_epoch-1), Phi_matrix, Q_matrix] =...
