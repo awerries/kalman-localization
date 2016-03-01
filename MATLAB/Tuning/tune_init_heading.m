@@ -8,8 +8,8 @@
 
 k_max = 50;
 % Specify ranges
-roll = linspace(-180,180,100);
-pitch = linspace(-180,180,100);
+roll = linspace(-45,45,100);
+pitch = linspace(-45,45,100);
 yaw = linspace(-180,180,100);
 % Repeat arrays
 roll = repmat(roll, [1 k_max]);
@@ -43,4 +43,7 @@ fprintf('\nBest max: %08.5f, rms is %08.5f\n', minmax, rms_error_filter(i));
 fprintf('Best iteration for max: %d, Roll: %08.5f, Pitch: %08.5f, Yaw: %08.5f\n', i, roll(roll_i(i)), pitch(pitch_i(i)), yaw(yaw_i(i)));
 [minrms, i] = min(rms_error_filter);
 fprintf('Best rms: %08.5f, max is %08.5f\n', minrms, max_error_filter(i));
+fprintf('Best iteration for rms: %d, Roll: %08.5f, Pitch: %08.5f, Yaw: %08.5f\n', i, roll(roll_i(i)), pitch(pitch_i(i)), yaw(yaw_i(i)));
+[minrms, i] = min((rms_error_filter+max_error_filter)/2);
+fprintf('Best average of RMS and max: %08.4f, rms is  %08.4f, max is %08.4f\n', minrms, rms_error_filter(i), max_error_filter(i));
 fprintf('Best iteration for rms: %d, Roll: %08.5f, Pitch: %08.5f, Yaw: %08.5f\n', i, roll(roll_i(i)), pitch(pitch_i(i)), yaw(yaw_i(i)));

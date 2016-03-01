@@ -61,7 +61,7 @@ rotation = [1   0         0;
 imu(:,2:4) = (rotation*imu(:,2:4)')';
 imu(:,5:7) = (rotation*imu(:,5:7)')';
 %% Correct time ranges %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-timelag = -0.0037004;
+timelag = 0;
 [start_time,Is] = max([min(nov_time),min(gt_t),min(imu(:,1))]);
 [end_time,Ie] = min([max(nov_time),max(gt_t),max(imu(:,1))]);
 end_time = end_time - start_time;
@@ -145,10 +145,10 @@ LC_KF_config.gyro_bias_PSD = 2.39e-8;
 LC_KF_config.lever_arm = [0.075; 0.256; 0.9209209];
 LC_KF_config.gps_correction = [0.7525; -0.1783567; -1.5190381];
 % Minimum and maximum R matrix values
-LC_KF_config.pos_sd_min = 2;
-LC_KF_config.pos_sd_max = 100;
-LC_KF_config.vel_sd_min = 1.25;
-LC_KF_config.vel_sd_max = 15;
+LC_KF_config.pos_sd_min = 0.414;
+LC_KF_config.pos_sd_max = 50;
+LC_KF_config.vel_sd_min = 2.02;
+LC_KF_config.vel_sd_max = 40;
 % Initial estimate of accelerometer and gyro static bias
 est_IMU_bias = [
    0.040292317647535

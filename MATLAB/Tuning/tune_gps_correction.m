@@ -33,6 +33,9 @@ fprintf('Best iteration for max: %d, GPS Correction: %08.7f\n', i, gps_correctio
 [minrms, i] = min(rms_error_filter);
 fprintf('Best rms: %08.7f, max is %08.7f\n', minrms, max_error_filter(i));
 fprintf('Best iteration for rms: %d, GPS Correction: %08.7f\n', i, gps_correction(i));
+[minrms, i] = min((rms_error_filter+max_error_filter)/2);
+fprintf('Best average of RMS and max: %08.4f, rms is  %08.4f, max is %08.4f\n', minrms, rms_error_filter(i), max_error_filter(i));
+fprintf('Best iteration for rms: %d, GPS Correction: %08.7f\n', i, gps_correction(i));
 
 fprintf('Z COMPONENT\n');
 figurec;
