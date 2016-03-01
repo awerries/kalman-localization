@@ -185,39 +185,44 @@ plot(nov_time, out_R_matrix(:,6), 'b');
 title('R Velocity Noise Variance');
 legend('x','y','z');
 
-% figurec;
-% subplot(231);
-% plot(nov_time, out_Q_matrix(:,1),'b'); hold on;
-% plot(nov_time, out_Q_matrix(:,2),'r');
-% plot(nov_time, out_Q_matrix(:,3),'g');
-% title('Q Attitude Noise Variation');
-% legend('roll','pitch','yaw');
-% 
-% subplot(232);
-% plot(nov_time, out_Q_matrix(:,4),'b'); hold on;
-% plot(nov_time, out_Q_matrix(:,5),'r');
-% plot(nov_time, out_Q_matrix(:,6),'g');
-% title('Q Velocity Noise Variation');
-% legend('x', 'y', 'z');
-% 
-% subplot(233);
-% plot(nov_time, out_Q_matrix(:,7),'b'); hold on;
-% plot(nov_time, out_Q_matrix(:,8),'r');
-% plot(nov_time, out_Q_matrix(:,9),'g');
-% title('Q Position Noise Variation');
-% legend('x', 'y', 'z');
-% 
-% subplot(234);
-% plot(nov_time, out_Q_matrix(:,10),'b'); hold on;
-% plot(nov_time, out_Q_matrix(:,11),'r');
-% plot(nov_time, out_Q_matrix(:,12),'g');
-% title('Q Accelerometer-bias Noise Variation');
-% legend('x', 'y', 'z');
-% 
-% subplot(235);
-% plot(nov_time, out_Q_matrix(:,13),'b'); hold on;
-% plot(nov_time, out_Q_matrix(:,14),'r');
-% plot(nov_time, out_Q_matrix(:,15),'g');
-% title('Q Gyroscope-bias Noise Variation');
-% legend('x', 'y', 'z');
+figurec;
+subplot(231);
+plot(nov_time, out_Q_matrix(:,1),'b'); hold on;
+plot(nov_time, out_Q_matrix(:,2),'r');
+plot(nov_time, out_Q_matrix(:,3),'g');
+title('Q Attitude Noise Variation');
+ylim([0, max(max(out_Q_matrix(:,1:3)))])
+legend('roll','pitch','yaw');
+
+subplot(232);
+plot(nov_time, out_Q_matrix(:,4),'b'); hold on;
+plot(nov_time, out_Q_matrix(:,5),'r');
+plot(nov_time, out_Q_matrix(:,6),'g');
+title('Q Velocity Noise Variation');
+ylim([0, max(max(out_Q_matrix(:,4:6)))])
+legend('x', 'y', 'z');
+
+subplot(233);
+plot(nov_time, out_Q_matrix(:,7),'b'); hold on;
+plot(nov_time, out_Q_matrix(:,8),'r');
+plot(nov_time, out_Q_matrix(:,9),'g');
+title('Q Position Noise Variation');
+ylim([0, max(max(out_Q_matrix(:,7:9)))])
+legend('x', 'y', 'z');
+
+subplot(234);
+plot(nov_time, out_Q_matrix(:,10),'b'); hold on;
+plot(nov_time, out_Q_matrix(:,11),'r');
+plot(nov_time, out_Q_matrix(:,12),'g');
+title('Q Accelerometer-bias Noise Variation');
+ylim([0, max(max(out_Q_matrix(:,10:12)))])
+legend('x', 'y', 'z');
+
+subplot(235);
+plot(nov_time, out_Q_matrix(:,13),'b'); hold on;
+plot(nov_time, out_Q_matrix(:,14),'r');
+plot(nov_time, out_Q_matrix(:,15),'g');
+title('Q Gyroscope-bias Noise Variation');
+ylim([0, max(max(out_Q_matrix(:,13:15)))])
+legend('x', 'y', 'z');
 
