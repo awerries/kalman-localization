@@ -1,5 +1,5 @@
 function [est_C_b_e_new,est_v_eb_e_new,est_r_eb_e_new,est_IMU_bias_new,...
-            P_matrix_new, x_est_new, Phi_matrix, Q_matrix] = ...
+            P_matrix_new, corrections, Phi_matrix, Q_matrix] = ...
          LC_KF_Epoch(GNSS_epoch, GNSS_r_eb_e,GNSS_v_eb_e,tor_s, est_C_b_e_old,...
                      est_v_eb_e_old,est_r_eb_e_old,est_IMU_bias_old,...
                      P_matrix_old,meas_f_ib_b,est_L_b_old,LC_KF_config,...
@@ -104,10 +104,10 @@ if GNSS_epoch <= LC_KF_config.n + 1
 else
     Q_matrix = tor_s*Q_matrix;
 end
-% [~,p] = chol(Q_matrix);
-% if p ~= 0
-%     Q_matrix = nearestSPD(Q_matrix);
-% end
+[~,p] = chol(Q_matrix);
+if p ~= 0
+    Q_matrix = nearestSPD(Q_matrix);
+end
 % 3. Propagate state estimates using (3.14) noting that all states are zero 
 % due to closed-loop correction.
 x_est_propagated(1:15,1) = 0;
@@ -140,6 +140,7 @@ delta_z(4:6,1) = GNSS_v_eb_e - est_v_eb_e_old ...
 
 % 9. Update state estimates using (3.24)
 x_est_new = x_est_propagated + K_matrix * delta_z;
+corrections = x_est_new;
 
 % 10. Update state estimation error covariance matrix using (3.25)
 P_matrix_new = (eye(15) - K_matrix * H_matrix) * P_matrix_propagated;

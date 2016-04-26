@@ -124,7 +124,7 @@ output_profile_name = 'Output_Profile.csv';
 % Initial attitude uncertainty per axis (deg, converted to rad)
 LC_KF_config.init_att_unc = degtorad(10);
 % Initial velocity uncertainty per axis (m/s)
-LC_KF_config.init_vel_unc = 10;
+LC_KF_config.init_vel_unc = 0.3;
 % Initial position uncertainty per axis (m)
 LC_KF_config.init_pos_unc = 10;
 % Initial accelerometer bias uncertainty (micro-g, converted
@@ -161,7 +161,7 @@ est_IMU_bias = [
    0.006795270705312];
 % number of measurements to use for innovation adaptive estimation
 % LC_KF_config.n = 470;
-LC_KF_config.n = Inf;
+LC_KF_config.n = 60;
 
 %% Format initial conditions
 % x y z vx vy vz r p y

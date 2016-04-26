@@ -199,10 +199,10 @@ for i = 2:length(filter_time)
             out_KF_SD(GNSS_epoch,n+1) = sqrt(P_matrix(n,n));
         end % for i
         for n = 1:6
-            out_R_matrix(GNSS_epoch,n) = R_matrix(n,n);
+            out_R_matrix(GNSS_epoch,n) = sqrt(abs(R_matrix(n,n)));
         end % for i
         for n = 1:15
-            out_Q_matrix(GNSS_epoch,n) = Q_matrix(n,n);
+            out_Q_matrix(GNSS_epoch,n) = sqrt(abs(Q_matrix(n,n)));
         end % for i
         last_GNSS_epoch = GNSS_epoch;
         GNSS_epoch = GNSS_epoch + 1;

@@ -7,10 +7,11 @@ function [Q_matrix] = adapt_noise_covariance(Phi_matrix, P_new, P_old, Q_matrix,
 k = GNSS_epoch-1;
 if k > n
     C = zeros(15,15);
-    for j = k-n:k
+    for j = k-n+1:k
         C = C + corrections(:,j)*corrections(:,j)';
     end
     Q_matrix = C./n + P_new - Phi_matrix*P_old*Phi_matrix';
+    Q_matrix = diag(diag(Q_matrix));
 else
     
 end
