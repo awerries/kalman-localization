@@ -1,57 +1,57 @@
-% %% Raw IMU data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% figurec;
-% subplot(311);
-% plot(imu_time, imu(:,2), '.');
-% xlabel('Time (s)'); ylabel('X Acceleration (m/s^2)');
-% subplot(312);
-% plot(imu_time, imu(:,3), '.');
-% xlabel('Time (s)'); ylabel('Y Acceleration (m/s^2)');
-% subplot(313);
-% plot(imu_time, imu(:,4), '.');
-% xlabel('Time (s)'); ylabel('Z Acceleration (m/s^2)');
-% 
-% figurec;
-% subplot(311);
-% plot(imu_time, imu(:,5), '.');
-% xlabel('Time (s)'); ylabel('Roll rate (rad/s)');
-% subplot(312);
-% plot(imu_time, imu(:,6), '.');
-% xlabel('Time (s)'); ylabel('Pitch rate (rad/s)');
-% subplot(313);
-% plot(imu_time, imu(:,7), '.');
-% xlabel('Time (s)'); ylabel('Yaw rate (rad/s)');
+%% Raw IMU data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figurec;
+subplot(311);
+plot(imu_time, imu(:,2), '.');
+xlabel('Time (s)'); ylabel('X Acceleration (m/s^2)');
+subplot(312);
+plot(imu_time, imu(:,3), '.');
+xlabel('Time (s)'); ylabel('Y Acceleration (m/s^2)');
+subplot(313);
+plot(imu_time, imu(:,4), '.');
+xlabel('Time (s)'); ylabel('Z Acceleration (m/s^2)');
 
-% %% Compare ground truth to raw NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% figurec;
-% plot(gps_x, gps_y,'r--', 'LineWidth', 2);
-% xlabel('Easting (m)');
-% ylabel('Northing (m)');
-% hold on;
-% plot(ground_truth(:,1),ground_truth(:,2),'c');
-% legend('NovAtel','Applanix');
-% axis equal;
-% 
-% figurec;
-% subplot(311);
-% plot(nov_time, gps_x,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Easting (m)');
-% hold on; plot(nov_time, ground_truth(:,1),'c');
-% legend('NovAtel','Applanix');
-% 
-% subplot(312);
-% plot(nov_time, gps_y,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Northing (m)');
-% hold on; plot(nov_time, ground_truth(:,2),'c');
-% legend('NovAtel','Applanix','Location','SouthEast');
-% 
-% subplot(313);
-% plot(nov_time, gps_h,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Northing (m)');
-% hold on; plot(nov_time, ground_truth(:,3),'c');
-% legend('NovAtel','Applanix','Location','SouthEast');
+figurec;
+subplot(311);
+plot(imu_time, imu(:,5), '.');
+xlabel('Time (s)'); ylabel('Roll rate (rad/s)');
+subplot(312);
+plot(imu_time, imu(:,6), '.');
+xlabel('Time (s)'); ylabel('Pitch rate (rad/s)');
+subplot(313);
+plot(imu_time, imu(:,7), '.');
+xlabel('Time (s)'); ylabel('Yaw rate (rad/s)');
+
+%% Compare ground truth to raw NovAtel data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+figurec;
+plot(gps_x, gps_y,'r--', 'LineWidth', 2);
+xlabel('Easting (m)');
+ylabel('Northing (m)');
+hold on;
+plot(ground_truth(:,1),ground_truth(:,2),'c');
+legend('NovAtel','Applanix');
+axis equal;
+
+figurec;
+subplot(311);
+plot(nov_time, gps_x,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Easting (m)');
+hold on; plot(nov_time, ground_truth(:,1),'c');
+legend('NovAtel','Applanix');
+
+subplot(312);
+plot(nov_time, gps_y,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Northing (m)');
+hold on; plot(nov_time, ground_truth(:,2),'c');
+legend('NovAtel','Applanix','Location','SouthEast');
+
+subplot(313);
+plot(nov_time, gps_h,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Northing (m)');
+hold on; plot(nov_time, ground_truth(:,3),'c');
+legend('NovAtel','Applanix','Location','SouthEast');
 
 %% Plot filter results %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 roll = out_profile(:,8);
@@ -72,37 +72,37 @@ plot(filter_time, rad2deg(yaw)); hold on;
 xlabel('Time (s)');
 ylabel('Yaw (deg)');
 
-% figurec;
-% plot(x, y,'r--', 'LineWidth', 2);
-% xlabel('Easting (m)');
-% ylabel('Northing (m)');
-% hold on;
-% plot(ground_truth(:,1),ground_truth(:,2),'c');
-% plot(gps_x, gps_y,'b-.', 'LineWidth', 2);
-% legend('Filtered','Applanix','NovAtel');
-% axis equal;
-% 
-% figurec;
-% subplot(311);
-% plot(filter_time, x,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Easting (m)');
-% hold on; plot(filter_time, ground_truth_full(:,1),'c');
-% legend('Filtered','Applanix');
-% 
-% subplot(312);
-% plot(filter_time, y,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Northing (m)');
-% hold on; plot(filter_time, ground_truth_full(:,2),'c');
-% legend('Filtered','Applanix','Location','SouthEast');
-% 
-% subplot(313);
-% plot(filter_time, h,'r--', 'LineWidth', 2);
-% xlabel('Time (s)');
-% ylabel('Altitude (m)');
-% hold on; plot(filter_time, ground_truth_full(:,3),'c');
-% legend('Filtered','Applanix','Location','SouthEast');
+figurec;
+plot(x, y,'r--', 'LineWidth', 2);
+xlabel('Easting (m)');
+ylabel('Northing (m)');
+hold on;
+plot(ground_truth(:,1),ground_truth(:,2),'c');
+plot(gps_x, gps_y,'b-.', 'LineWidth', 2);
+legend('Filtered','Applanix','NovAtel');
+axis equal;
+
+figurec;
+subplot(311);
+plot(filter_time, x,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Easting (m)');
+hold on; plot(filter_time, ground_truth_full(:,1),'c');
+legend('Filtered','Applanix');
+
+subplot(312);
+plot(filter_time, y,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Northing (m)');
+hold on; plot(filter_time, ground_truth_full(:,2),'c');
+legend('Filtered','Applanix','Location','SouthEast');
+
+subplot(313);
+plot(filter_time, h,'r--', 'LineWidth', 2);
+xlabel('Time (s)');
+ylabel('Altitude (m)');
+hold on; plot(filter_time, ground_truth_full(:,3),'c');
+legend('Filtered','Applanix','Location','SouthEast');
 
 zero_line = zeros(length(filter_time), 1);
 figurec;
@@ -138,91 +138,99 @@ subplot(311);
 plot(nov_time, rad2deg(out_KF_SD(:,2)),'b'); hold on;
 plot(nov_time, rad2deg(out_KF_SD(:,3)),'r');
 plot(nov_time, rad2deg(out_KF_SD(:,4)),'g');
-title('Attitude Uncertainty P');
+xlabel('Time (s)');
+ylabel('P Att. Unc. (deg)');
 legend('roll','pitch','yaw');
 
 subplot(312);
 plot(nov_time, out_KF_SD(:,5),'b'); hold on;
 plot(nov_time, out_KF_SD(:,6),'r');
 plot(nov_time, out_KF_SD(:,7),'g');
-title('Velocity Uncertainty P');
+xlabel('Time (s)');
+ylabel('P Vel. Unc. (m/s)');
 legend('x', 'y', 'z');
 
 subplot(313);
 plot(nov_time, out_KF_SD(:,8),'b'); hold on;
 plot(nov_time, out_KF_SD(:,9),'r');
 plot(nov_time, out_KF_SD(:,10),'g');
-title('Position Uncertainty P');
+xlabel('Time (s)');
+ylabel('P Pos. Unc. (m)');
 legend('x', 'y', 'z');
 
 figurec;
 subplot(211);
-plot(nov_time, out_KF_SD(:,11)/mug_to_mps2,'b'); hold on;
-plot(nov_time, out_KF_SD(:,12)/mug_to_mps2,'r');
-plot(nov_time, out_KF_SD(:,13)/mug_to_mps2,'g');
-title('Accel Bias Uncertainty P');
+plot(nov_time, out_KF_SD(:,11),'b'); hold on;
+plot(nov_time, out_KF_SD(:,12),'r');
+plot(nov_time, out_KF_SD(:,13),'g');
+xlabel('Time (s)');
+ylabel('P Accel Bias Unc. (m/s^2)');
 legend('x', 'y', 'z');
 
 subplot(212);
-plot(nov_time, out_KF_SD(:,14) / deg_to_rad * 3600,'b'); hold on;
-plot(nov_time, out_KF_SD(:,15) / deg_to_rad * 3600,'r');
-plot(nov_time, out_KF_SD(:,16) / deg_to_rad * 3600,'g');
-title('Gyro Bias Uncertainty P');
+plot(nov_time, out_KF_SD(:,14),'b'); hold on;
+plot(nov_time, out_KF_SD(:,15),'r');
+plot(nov_time, out_KF_SD(:,16),'g');
+xlabel('Time (s)');
+ylabel('P Gyro Bias Unc. (rad/s)');
 legend('x', 'y', 'z');
 
 figurec;
 subplot(211);
 plot(nov_time, out_R_matrix(:,1), 'b'); hold on;
 plot(nov_time, out_R_matrix(:,2), 'r'); 
-plot(nov_time, out_R_matrix(:,3), 'b'); 
-title('R Position Noise Variance');
+plot(nov_time, out_R_matrix(:,3), 'g'); 
+ylabel('R Position Noise (m)');
+xlabel('Time (s)');
 legend('x','y','z');
 
 subplot(212);
 plot(nov_time, out_R_matrix(:,4), 'b'); hold on;
 plot(nov_time, out_R_matrix(:,5), 'r'); 
-plot(nov_time, out_R_matrix(:,6), 'b'); 
-title('R Velocity Noise Variance');
+plot(nov_time, out_R_matrix(:,6), 'g'); 
+ylabel('R Velocity Noise (m)');
+xlabel('Time (s)');
 legend('x','y','z');
 
 figurec;
-subplot(231);
-plot(nov_time, out_Q_matrix(:,1),'b'); hold on;
-plot(nov_time, out_Q_matrix(:,2),'r');
-plot(nov_time, out_Q_matrix(:,3),'g');
-title('Q Attitude Noise Variation');
-ylim([0, max(max(out_Q_matrix(:,1:3)))])
+subplot(311);
+plot(nov_time, abs(out_Q_matrix(:,1)),'b'); hold on;
+plot(nov_time, abs(out_Q_matrix(:,2)),'r');
+plot(nov_time, abs(out_Q_matrix(:,3)),'g');
+xlabel('Time (s)');
+ylabel('Q Att. Noise (rad)');
 legend('roll','pitch','yaw');
 
-subplot(232);
-plot(nov_time, out_Q_matrix(:,4),'b'); hold on;
-plot(nov_time, out_Q_matrix(:,5),'r');
-plot(nov_time, out_Q_matrix(:,6),'g');
-title('Q Velocity Noise Variation');
-ylim([0, max(max(out_Q_matrix(:,4:6)))])
+subplot(312);
+plot(nov_time, abs(out_Q_matrix(:,4)),'b'); hold on;
+plot(nov_time, abs(out_Q_matrix(:,5)),'r');
+plot(nov_time, abs(out_Q_matrix(:,6)),'g');
+xlabel('Time (s)');
+ylabel('Q Vel. Noise (m/s)');
 legend('x', 'y', 'z');
 
-subplot(233);
-plot(nov_time, out_Q_matrix(:,7),'b'); hold on;
-plot(nov_time, out_Q_matrix(:,8),'r');
-plot(nov_time, out_Q_matrix(:,9),'g');
-title('Q Position Noise Variation');
-ylim([0, max(max(out_Q_matrix(:,7:9)))])
+subplot(313);
+plot(nov_time, abs(out_Q_matrix(:,7)),'b'); hold on;
+plot(nov_time, abs(out_Q_matrix(:,8)),'r');
+plot(nov_time, abs(out_Q_matrix(:,9)),'g');
+xlabel('Time (s)');
+ylabel('Q Pos. Noise (m)');
 legend('x', 'y', 'z');
 
-subplot(234);
-plot(nov_time, out_Q_matrix(:,10),'b'); hold on;
-plot(nov_time, out_Q_matrix(:,11),'r');
-plot(nov_time, out_Q_matrix(:,12),'g');
-title('Q Accelerometer-bias Noise Variation');
-ylim([0, max(max(out_Q_matrix(:,10:12)))])
+figurec;
+subplot(211);
+plot(nov_time, abs(out_Q_matrix(:,10)),'b'); hold on;
+plot(nov_time, abs(out_Q_matrix(:,11)),'r');
+plot(nov_time, abs(out_Q_matrix(:,12)),'g');
+xlabel('Time (s)');
+ylabel('Q Accel-bias Noise (m/s^2)');
 legend('x', 'y', 'z');
 
-subplot(235);
-plot(nov_time, out_Q_matrix(:,13),'b'); hold on;
-plot(nov_time, out_Q_matrix(:,14),'r');
-plot(nov_time, out_Q_matrix(:,15),'g');
-title('Q Gyroscope-bias Noise Variation');
-ylim([0, max(max(out_Q_matrix(:,13:15)))])
+subplot(212);
+plot(nov_time, abs(out_Q_matrix(:,13)),'b'); hold on;
+plot(nov_time, abs(out_Q_matrix(:,14)),'r');
+plot(nov_time, abs(out_Q_matrix(:,15)),'g');
+xlabel('Time (s)');
+ylabel('Q Gyro-bias Noise (rad/s)');
 legend('x', 'y', 'z');
 
