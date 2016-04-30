@@ -6,7 +6,7 @@
 %
 % Adam Werries 2016, see Apache 2.0 license.
 
-k_max = 50;
+k_max = 60;
 % Specify ranges
 roll = linspace(-45,45,100);
 pitch = linspace(-45,45,100);
