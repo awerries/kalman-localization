@@ -47,7 +47,20 @@ function [est_C_b_e_new,est_v_eb_e_new,est_r_eb_e_new,est_IMU_bias_new,...
 % License: BSD; see GrovesCode/license.txt for details
 %
 % Edits made by Adam Werries where noted as (Werries), Copyright 2015
-
+% GNSS_epoch
+% GNSS_r_eb_e
+% GNSS_v_eb_e
+% tor_s
+% est_C_b_e_old
+% est_v_eb_e_old
+% est_r_eb_e_old
+% est_IMU_bias_old
+% P_matrix_old
+% meas_f_ib_b
+% est_L_b_old
+% Q_matrix
+% R_matrix
+% meas_omega_ib_b
 % Constants (sone of these could be changed to inputs at a later date)
 c = 299792458; % Speed of light in m/s
 omega_ie = 7.292115E-5;  % Earth rotation rate in rad/s

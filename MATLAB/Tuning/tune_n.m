@@ -4,7 +4,7 @@
 % Adam Werries 2016, see Apache 2.0 license.
 
 % Specify ranges
-n = 10:10:1000;
+n = 10:20:2000;
 num_items = length(n);
 rms_error_filter = Inf*ones(1,num_items);
 max_error_filter = Inf*ones(1,num_items);
@@ -20,8 +20,8 @@ parfor i = 1:num_items
         x = x-min_x;
         y = y-min_y;
         h = -llh(:,3);
-        distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2 + (ground_truth_full(:,3)-h).^2).^0.5;
-%         distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
+%         distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2 + (ground_truth_full(:,3)-h).^2).^0.5;
+        distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
         rms_error_filter(i) = rms(distance);
         max_error_filter(i) = max(distance);
         fprintf('Iteration: %d, n: %d, rms: %08.5f, max:  %08.5f\n', i, n(i), rms_error_filter(i),max_error_filter(i));
@@ -37,3 +37,7 @@ fprintf('Best iteration for rms: %d, n: %d\n', i, n(i));
 [minrms, i] = min((rms_error_filter+max_error_filter)/2);
 fprintf('Best average of RMS and max: %08.4f, rms is  %08.4f, max is %08.4f\n', minrms, rms_error_filter(i), max_error_filter(i));
 fprintf('Best iteration for rms: %d, n: %d\n', i, n(i));
+
+figurec;
+plot(n, max_error_filter); hold on;
+plot(n, rms_error_filter);

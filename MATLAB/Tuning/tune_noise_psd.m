@@ -5,8 +5,8 @@
 
 k_max = 50;
 % Specify ranges
-accel_noise_PSD = logspace(-8, 5, 60);
-gyro_noise_PSD = logspace(-8, 5, 60);
+accel_noise_PSD = logspace(-8, 5, 70);
+gyro_noise_PSD = logspace(-8, 5, 70);
 % Repeat arrays
 accel_noise_PSD = repmat(accel_noise_PSD, [1 k_max]);
 gyro_noise_PSD = repmat(gyro_noise_PSD, [1 k_max]);

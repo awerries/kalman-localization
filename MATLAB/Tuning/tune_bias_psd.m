@@ -5,8 +5,8 @@
 
 k_max = 50;
 % Specify ranges
-accel_bias_PSD = logspace(-8,-2,40);
-gyro_bias_PSD = logspace(-8,-2,40);
+accel_bias_PSD = logspace(-10,-5,60);
+gyro_bias_PSD = logspace(-10,-5,60);
 % Repeat arrays
 accel_bias_PSD = repmat(accel_bias_PSD, [1 k_max]);
 gyro_bias_PSD = repmat(gyro_bias_PSD, [1 k_max]);
