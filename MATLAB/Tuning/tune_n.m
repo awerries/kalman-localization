@@ -4,14 +4,14 @@
 % Adam Werries 2016, see Apache 2.0 license.
 
 % Specify ranges
-n = 10:20:2000;
+n = 1:1:100;
 num_items = length(n);
 rms_error_filter = Inf*ones(1,num_items);
 max_error_filter = Inf*ones(1,num_items);
 parfor i = 1:num_items
     temp_conf = LC_KF_config;
     temp_conf.n = n(i);
-    [out_profile,~,~,~,~] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, est_IMU_bias);
+    [out_profile,~,~,~,~] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, temp_conf, est_IMU_bias);
     xyz = out_profile(:,2:4);
     if ~any(any(isnan(xyz))) && ~any(any(isinf(xyz)))
         llh = ecef2lla(xyz);
@@ -41,3 +41,7 @@ fprintf('Best iteration for rms: %d, n: %d\n', i, n(i));
 figurec;
 plot(n, max_error_filter); hold on;
 plot(n, rms_error_filter);
+
+
+load handel
+sound(y,Fs)

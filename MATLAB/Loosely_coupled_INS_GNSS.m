@@ -109,8 +109,8 @@ for n = 1:15
 end % for i
 
 % Initialize R (not really used but it makes me feel better
-pos_variance = LC_KF_config.skytraq_pos_stddev.^2*gps(1,16).^2.*ones(1,3);
-vel_variance = LC_KF_config.skytraq_vel_stddev.^2*gps(1,16).^2.*ones(1,3);
+pos_variance = LC_KF_config.gps_pos_stddev.^2*gps(1,16).^2.*ones(1,3);
+vel_variance = LC_KF_config.gps_vel_stddev.^2*gps(1,16).^2.*ones(1,3);
 R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
                          min(LC_KF_config.pos_sd_max,...
                              pos_variance)));
@@ -161,14 +161,14 @@ for i = 2:length(filter_time)
         est_L_b = lla(GNSS_epoch,1);
         % Use the GPS-reported standard deviation values, but clamping
         % min/max values according to configuration
-        pos_variance = LC_KF_config.skytraq_pos_stddev.^2*gps(GNSS_epoch,16).^2.*ones(1,3);
-        vel_variance = LC_KF_config.skytraq_vel_stddev.^2*gps(GNSS_epoch,16).^2.*ones(1,3);
-%         R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
-%                                      min(LC_KF_config.pos_sd_max,...
-%                                          pos_variance*tor_s)));
-%         R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
-%                                      min(LC_KF_config.vel_sd_max,...
-%                                          vel_variance*tor_s)));
+        pos_variance = LC_KF_config.gps_pos_stddev.^2*gps(GNSS_epoch,16).^2;
+        vel_variance = LC_KF_config.gps_vel_stddev.^2*gps(GNSS_epoch,16).^2;
+        R_matrix(1:3,1:3) = diag(max(LC_KF_config.pos_sd_min, ...
+                                     min(LC_KF_config.pos_sd_max,...
+                                         pos_variance.*ones(1,3)*tor_s)));
+        R_matrix(4:6,4:6) = diag(max(LC_KF_config.vel_sd_min,...
+                                     min(LC_KF_config.vel_sd_max,...
+                                         vel_variance.*ones(1,3)*tor_s)));
 %         disp(size(R_matrix));
 %         disp(diag(R_matrix));
         

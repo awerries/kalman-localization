@@ -5,8 +5,8 @@
 
 k_max = 50;
 % Specify ranges
-accel_bias_PSD = logspace(-10,-5,60);
-gyro_bias_PSD = logspace(-10,-5,60);
+accel_bias_PSD = logspace(-10,-4,100);
+gyro_bias_PSD = logspace(-10,-4,100);
 % Repeat arrays
 accel_bias_PSD = repmat(accel_bias_PSD, [1 k_max]);
 gyro_bias_PSD = repmat(gyro_bias_PSD, [1 k_max]);
@@ -22,15 +22,16 @@ parfor i = 1:num_items
     temp_conf = LC_KF_config;
     temp_conf.accel_bias_PSD = accel_bias_PSD(accel_bias_i(i));
     temp_conf.gyro_bias_PSD = gyro_bias_PSD(gyro_bias_i(i));
-    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, est_IMU_bias);
+    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, temp_conf, est_IMU_bias);
     xyz = out_profile(:,2:4);
     if ~any(any(isnan(xyz))) && ~any(any(isinf(xyz)))
         llh = ecef2lla(xyz);
         [x,y] = deg2utm(llh(:,1),llh(:,2));
         x = x-min_x;
         y = y-min_y;
-        h = -llh(:,3);
-        distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2 + (ground_truth_full(:,3)-h).^2).^0.5;
+%         h = -llh(:,3);
+%         distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2 + (ground_truth_full(:,3)-h).^2).^0.5;
+        distance = ((ground_truth_full(:,1)-x).^2 + (ground_truth_full(:,2)-y).^2).^0.5;
         rms_error_filter(i) = rms(distance);
         max_error_filter(i) = max(distance);
     end
