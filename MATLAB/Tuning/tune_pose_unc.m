@@ -5,9 +5,9 @@
 
 k_max = 50;
 % Specify ranges
-init_att_unc = linspace(0.01,10,40);
-init_vel_unc = linspace(0.01,5,40);
-init_pos_unc = linspace(0.1,40,40);
+init_att_unc = linspace(0.01,10,100);
+init_vel_unc = linspace(0.01,10,100);
+init_pos_unc = linspace(0.1,40,100);
 % Repeat arrays
 init_att_unc = repmat(init_att_unc, [1 k_max]);
 init_vel_unc = repmat(init_vel_unc, [1 k_max]);
@@ -25,7 +25,7 @@ parfor i = 1:num_items
     temp_conf.init_att_unc = deg2rad(init_att_unc(att_i(i)));
     temp_conf.init_vel_unc = init_vel_unc(vel_i(i));
     temp_conf.init_pos_unc = init_pos_unc(pos_i(i));
-    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, est_IMU_bias);
+    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, temp_conf, est_IMU_bias);
     xyz = out_profile(:,2:4);
     llh = ecef2lla(xyz);
     [x,y] = deg2utm(llh(:,1),llh(:,2));

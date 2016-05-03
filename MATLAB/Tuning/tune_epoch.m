@@ -4,7 +4,7 @@
 % Adam Werries 2016, see Apache 2.0 license.
 
 % Specify range
-epoch = linspace(0.01,0.1,2000);
+epoch = linspace(0.01,0.1,200);
 num_items = length(epoch);
 rms_error_filter = Inf*ones(1,num_items);
 max_error_filter = Inf*ones(1,num_items);
@@ -12,7 +12,7 @@ parfor i = 1:num_items
     fprintf('Iteration: %d, Epoch: %08.7f\n', i, epoch(i));
     temp_filter_time = 0:epoch(i):imu_time(length(imu_time));
     [out_profile,out_IMU_bias_est,out_KF_SD] = ...
-        Loosely_coupled_INS_GNSS(init_cond, temp_filter_time, epoch(i), lla, novatel, imu, LC_KF_config, est_IMU_bias);
+        Loosely_coupled_INS_GNSS(init_cond, temp_filter_time, epoch(i), lla, gps, imu, LC_KF_config, est_IMU_bias);
     xyz = out_profile(:,2:4);
     if ~any(any(isnan(xyz))) && ~any(any(isinf(xyz)))
         llh = ecef2lla(xyz);

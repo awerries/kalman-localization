@@ -5,8 +5,8 @@
 
 k_max = 40;
 % Specify ranges
-init_b_a_unc = linspace(10,3000,50);
-init_b_g_unc = linspace(0,500,50);
+init_b_a_unc = linspace(10,3000,100);
+init_b_g_unc = linspace(0,500,100);
 % Repeat arrays
 init_b_a_unc = repmat(init_b_a_unc, [1 k_max]);
 init_b_g_unc = repmat(init_b_g_unc, [1 k_max]);
@@ -21,7 +21,7 @@ parfor i = 1:num_items
     temp_conf = LC_KF_config;
     temp_conf.init_b_a_unc = init_b_a_unc(ba_i(i)) * mug_to_mps2;
     temp_conf.init_b_g_unc = init_b_g_unc(bg_i(i)) * deg_to_rad / 3600;
-    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, est_IMU_bias);
+    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, temp_conf, est_IMU_bias);
     xyz = out_profile(:,2:4);
     llh = ecef2lla(xyz);
     [x,y] = deg2utm(llh(:,1),llh(:,2));

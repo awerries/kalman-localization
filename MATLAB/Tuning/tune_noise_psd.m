@@ -5,8 +5,8 @@
 
 k_max = 50;
 % Specify ranges
-accel_noise_PSD = logspace(-8, 5, 60);
-gyro_noise_PSD = logspace(-8, 5, 60);
+accel_noise_PSD = logspace(-8, 5, 100);
+gyro_noise_PSD = logspace(-8, 5, 100);
 % Repeat arrays
 accel_noise_PSD = repmat(accel_noise_PSD, [1 k_max]);
 gyro_noise_PSD = repmat(gyro_noise_PSD, [1 k_max]);
@@ -22,7 +22,7 @@ parfor i = 1:num_items
     temp_conf = LC_KF_config;
     temp_conf.accel_noise_PSD = (accel_noise_PSD(accel_i(i)) * mug_to_mps2)^2;
     temp_conf.gyro_noise_PSD = (gyro_noise_PSD(gyro_i(i)) * deg_to_rad / 60)^2;
-    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, novatel, imu, temp_conf, est_IMU_bias);
+    [out_profile,out_IMU_bias_est,out_KF_SD] = Loosely_coupled_INS_GNSS(init_cond, filter_time, epoch, lla, gps, imu, temp_conf, est_IMU_bias);
     xyz = out_profile(:,2:4);
     if ~any(any(isnan(xyz))) && ~any(any(isinf(xyz)))
         llh = ecef2lla(xyz);

@@ -28,7 +28,12 @@ function [r_eb_e,v_eb_e,C_b_e] = Nav_equations_ECEF(tor_i,old_r_eb_e,...
 
 % Copyright 2012, Paul Groves
 % License: BSD; see license.txt for details
-
+% tor_i
+% old_r_eb_e
+% old_v_eb_e
+% old_C_b_e
+% f_ib_b
+% omega_ib_b
 % parameters
 omega_ie = 7.292115E-5;  % Earth rotation rate (rad/s)
 
